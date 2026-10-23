@@ -1,288 +1,595 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import {
-  Menu, X, ArrowUpRight, CheckCircle2, Factory, Boxes, Wrench,
-  ClipboardCheck, MessageCircle, ShieldCheck, Clock3, Search,
-  ChevronDown, Send, MoveRight, Layers, HelpCircle, Lock, Sliders
-} from 'lucide-vue-next'
-import AdminPanel from './components/AdminPanel.vue'
-import MoldDetailModal from './components/MoldDetailModal.vue'
+  Menu,
+  X,
+  ArrowUpRight,
+  CheckCircle2,
+  Factory,
+  Boxes,
+  Wrench,
+  ClipboardCheck,
+  MessageCircle,
+  ShieldCheck,
+  Clock3,
+  Search,
+  ChevronDown,
+  Send,
+  MoveRight,
+  Lock,
+} from "lucide-vue-next";
+import AdminPanel from "./components/AdminPanel.vue";
+import MoldDetailModal from "./components/MoldDetailModal.vue";
+import ProductDetailModal from "./components/ProductDetailModal.vue";
 
-const API = import.meta.env.VITE_API_URL || '/api'
-const WA_DEFAULT = import.meta.env.VITE_WHATSAPP_NUMBER || '628132207311'
+const API = import.meta.env.VITE_API_URL || "/api";
+const WA_DEFAULT = import.meta.env.VITE_WHATSAPP_NUMBER || "628132207311";
 
 // --- View Mode: 'site' or 'admin' ---
-const viewMode = ref('site')
+const viewMode = ref("site");
 function setViewMode(mode) {
-  viewMode.value = mode
-  if (mode === 'admin') {
-    window.location.hash = 'admin'
+  viewMode.value = mode;
+  if (mode === "admin") {
+    window.location.hash = "admin";
   } else {
-    if (window.location.hash === '#admin') history.pushState('', document.title, window.location.pathname)
+    if (window.location.hash === "#admin" || window.location.hash === "#cms") {
+      history.pushState("", document.title, window.location.pathname);
+    }
+    refreshAllPublicData();
   }
 }
 
 function handleHashChange() {
-  if (window.location.hash === '#admin' || window.location.hash === '#cms') {
-    viewMode.value = 'admin'
+  if (window.location.hash === "#admin" || window.location.hash === "#cms") {
+    viewMode.value = "admin";
   }
 }
 
 // --- CMS Data (Dynamic with Robust Defaults) ---
 const cms = ref({
+  seo: {
+    metaTitle:
+      "iLUFA Molding — Jual Molding Injeksi Plastik Bekas, Jasa Pemesanan Molding Import & Pembuatan Molding Plastik Custom",
+    metaDescription:
+      "iLUFA Molding melayani jasa pemesanan molding import baru, pembuatan molding plastik custom sesuai desain 2D/3D & sampel, serta jual molding injeksi plastik bekas (second) siap pakai untuk pabrik manufaktur plastik di Indonesia.",
+    metaKeywords:
+      "jual molding injeksi plastik bekas, jasa pemesanan molding import, pembuatan molding plastik custom, cetakan injeksi plastik, jual mold plastik second, pabrik molding plastik indonesia, harga molding injeksi plastik, pengadaan cetakan plastik bekasi cikarang",
+    canonicalUrl: "https://ilufamolding.com/",
+  },
   general: {
-    siteName: 'iLUFA MOLDING',
-    siteTagline: 'INDUSTRIAL MOLD PROCUREMENT',
-    topbarNotice: 'Solusi pengadaan molding untuk kebutuhan industri & manufaktur',
+    siteName: "iLUFA MOLDING",
+    siteTagline: "INDUSTRIAL MOLD PROCUREMENT",
+    topbarNotice:
+      "Jasa Pemesanan Molding Import, Pembuatan Molding Plastik Custom & Jual Molding Injeksi Plastik Bekas",
     whatsappNumber: WA_DEFAULT,
-    whatsappMessage: 'Halo iLUFA Molding, saya ingin konsultasi kebutuhan molding injeksi plastik.',
-    email: 'info@ilufamolding.com',
-    phone: '+62 813-2207-311',
-    address: 'Kawasan Industri Cikarang, Bekasi, Jawa Barat 17530',
-    operationalHours: 'Senin - Sabtu: 08.00 - 17.00 WIB'
+    whatsappMessage:
+      "Halo iLUFA Molding, saya ingin konsultasi kebutuhan molding injeksi plastik.",
+    email: "info@ilufamolding.com",
+    phone: "+62 813-2207-311",
+    address: "Kawasan Industri Cikarang, Bekasi, Jawa Barat 17530",
+    operationalHours: "Senin - Sabtu: 08.00 - 17.00 WIB",
   },
   hero: {
-    eyebrow: 'SOLUSI PENGADAAN MOLDING PLASTIK',
-    title: 'Molding yang tepat.\nProduksi lebih siap.',
-    subtitle: 'Pemesanan molding injeksi plastik baru, custom, dan second untuk mendukung kebutuhan produksi bisnis Anda melalui sistem PO / indent terpercaya.',
-    primaryCtaText: 'Konsultasi & Minta Penawaran',
-    secondaryCtaText: 'Jelajahi Katalog',
-    imageUrl: 'https://images.unsplash.com/photo-1567789884554-0b844b597180?auto=format&fit=crop&w=1300&q=85',
+    eyebrow: "SOLUSI PENGADAAN MOLDING INJEKSI PLASTIK",
+    title: "Molding yang tepat.\nProduksi lebih siap.",
+    subtitle:
+      "Solusi lengkap jasa pemesanan molding import baru, pembuatan molding plastik custom sesuai desain 2D/3D, serta jual molding injeksi plastik bekas (second) berkualitas melalui sistem PO / indent terpercaya.",
+    primaryCtaText: "Konsultasi & Minta Penawaran",
+    secondaryCtaText: "Jelajahi Katalog",
+    imageUrl:
+      "https://images.unsplash.com/photo-1567789884554-0b844b597180?auto=format&fit=crop&w=1300&q=85",
     badges: [
-      'Sesuai kebutuhan industri',
-      'Proses transparan & terukur',
-      'Sistem PO / Indent terpercaya'
+      "Jasa pemesanan molding import",
+      "Pembuatan molding plastik custom",
+      "Jual molding injeksi plastik bekas",
     ],
-    floatingCardTitle: 'Industrial Mold Solutions',
-    floatingCardSubtitle: 'NEW · CUSTOM · SECOND'
+    floatingCardTitle: "Industrial Mold Solutions",
+    floatingCardSubtitle: "IMPORT BARU · CUSTOM · SECOND",
   },
   services: [
     {
-      num: '01 / PROCUREMENT',
-      title: 'Molding Import Baru',
-      desc: 'Pengadaan molding baru sesuai spesifikasi dan kebutuhan produksi, dengan proses PO atau indent terpercaya.',
-      ctaText: 'Diskusikan kebutuhan',
-      type: 'NEW'
+      num: "01 / PROCUREMENT",
+      title: "Jasa Pemesanan Molding Import Baru",
+      desc: "Layanan jasa pemesanan molding import baru langsung dari workshop spesialis luar negeri sesuai standar industri. Pilihan multi-cavity, steel grade (P20, 718H, NAK80, S136), dan hot/cold runner system terkalibrasi.",
+      ctaText: "Pesan Molding Import",
+      type: "NEW",
     },
     {
-      num: '02 / ENGINEERING',
-      title: 'Molding Custom',
-      desc: 'Pembuatan cetakan berdasarkan gambar teknik, desain 3D, atau sampel produk Anda.',
-      ctaText: 'Konsultasi desain',
-      type: 'CUSTOM'
+      num: "02 / ENGINEERING",
+      title: "Pembuatan Molding Plastik Custom",
+      desc: "Jasa pembuatan molding plastik custom berdasarkan gambar teknik 2D/3D (CAD/STEP) atau sampel fisik produk Anda. Konsultasi ketebalan dinding, shrinkage, parting line, dan kecocokan tonase mesin injeksi.",
+      ctaText: "Konsultasi Desain (RFQ)",
+      type: "CUSTOM",
     },
     {
-      num: '03 / SECONDARY MARKET',
-      title: 'Molding Second',
-      desc: 'Alternatif molding bekas berkualitas untuk menekan CAPEX. Kondisi dan kelengkapan diverifikasi.',
-      ctaText: 'Lihat katalog',
-      type: 'USED'
-    }
+      num: "03 / SECONDARY MARKET",
+      title: "Jual Molding Injeksi Plastik Bekas / Second",
+      desc: "Pusat jual molding injeksi plastik bekas (second) berkualitas untuk pabrik yang ingin menghemat biaya investasi cetakan (CAPEX). Setiap unit telah diverifikasi ukuran, cavity, runner, dan kelayakan cetaknya.",
+      ctaText: "Lihat Katalog Second",
+      type: "USED",
+    },
   ],
   process: [
     {
-      step: '01',
-      title: 'Kirim Kebutuhan & Gambar',
-      desc: 'Sampaikan jenis produk, gambar 2D/3D, sampel, atau target produksi Anda.'
+      step: "01",
+      title: "Kirim Kebutuhan & Gambar",
+      desc: "Sampaikan jenis produk, gambar 2D/3D, sampel, atau target produksi Anda.",
     },
     {
-      step: '02',
-      title: 'Konsultasi Teknis & Mesin',
-      desc: 'Diskusikan ukuran, cavity, baja mold, dan tonase mesin injection molding Anda.'
+      step: "02",
+      title: "Konsultasi Teknis & Mesin",
+      desc: "Diskusikan ukuran, cavity, baja mold, dan tonase mesin injection molding Anda.",
     },
     {
-      step: '03',
-      title: 'Penawaran & Kesepakatan',
-      desc: 'Penawaran harga, estimasi waktu, termin pembayaran PO, dan pengiriman dikonfirmasi.'
+      step: "03",
+      title: "Penawaran & Kesepakatan",
+      desc: "Penawaran harga, estimasi waktu, termin pembayaran PO, dan pengiriman dikonfirmasi.",
     },
     {
-      step: '04',
-      title: 'Pengadaan, QC, & Pengiriman',
-      desc: 'Proses produksi, uji coba cetak (sample test), hingga pengiriman aman ke pabrik Anda.'
-    }
+      step: "04",
+      title: "Pengadaan, QC, & Pengiriman",
+      desc: "Proses produksi, uji coba cetak (sample test), hingga pengiriman aman ke pabrik Anda.",
+    },
   ],
   about: {
-    eyebrow: 'TENTANG iLUFA MOLDING',
-    title: 'Partner Terpercaya Pengadaan\nMolding Injeksi Plastik',
-    p1: 'iLUFA Molding dirancang sebagai titik awal bagi perusahaan manufaktur yang membutuhkan solusi pengadaan molding injeksi plastik—baik untuk kebutuhan baru, pengembangan desain custom, maupun alternatif molding second siap pakai.',
-    p2: 'Kami mengutamakan komunikasi teknis, transparansi spesifikasi baja, dan kepastian alur pemesanan sebelum transaksi.',
-    imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=85',
-    caption: 'Procurement with Precision & Purpose',
+    eyebrow: "TENTANG iLUFA MOLDING",
+    title: "Partner Terpercaya Pengadaan\nMolding Injeksi Plastik",
+    p1: "iLUFA Molding dirancang sebagai titik awal bagi perusahaan manufaktur yang membutuhkan solusi pengadaan molding injeksi plastik—baik untuk kebutuhan baru, pengembangan desain custom, maupun alternatif molding second siap pakai.",
+    p2: "Kami mengutamakan komunikasi teknis, transparansi spesifikasi baja, dan kepastian alur pemesanan sebelum transaksi.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=85",
+    caption: "Procurement with Precision & Purpose",
     points: [
-      'Fokus kebutuhan spesifik manufaktur lokal',
-      'Transparansi spesifikasi baja dan kelengkapan',
-      'Dukungan konsultasi teknis sebelum komitmen',
-      'Layanan PO / Indent resmi & bergaransi'
-    ]
+      "Fokus kebutuhan spesifik manufaktur lokal",
+      "Transparansi spesifikasi baja dan kelengkapan",
+      "Dukungan konsultasi teknis sebelum komitmen",
+      "Layanan PO / Indent resmi & bergaransi",
+    ],
   },
   faqs: [
     {
-      q: 'Bagaimana sistem pembayaran untuk pemesanan molding baru / custom?',
-      a: 'Pemesanan molding baru atau custom menggunakan sistem termin (PO/Indent), umumnya Down Payment (DP) saat kontrak disepakati, termin setelah video trial cetak (T1) disetujui, dan pelunasan sebelum pengiriman ke pabrik Anda.'
+      q: "Bagaimana sistem pembayaran untuk pemesanan molding baru / custom?",
+      a: "Pemesanan molding baru atau custom menggunakan sistem termin (PO/Indent), umumnya Down Payment (DP) saat kontrak disepakati, termin setelah video trial cetak (T1) disetujui, dan pelunasan sebelum pengiriman ke pabrik Anda.",
     },
     {
-      q: 'Berapa lama estimasi waktu pembuatan dan pengiriman molding import?',
-      a: 'Waktu pengerjaan (lead time) umumnya berkisar 25–45 hari kerja tergantung kompleksitas desain, ukuran, dan jumlah cavity. Estimasi pengiriman dikonfirmasi secara transparan saat penawaran.'
+      q: "Berapa lama estimasi waktu pembuatan dan pengiriman molding import?",
+      a: "Waktu pengerjaan (lead time) umumnya berkisar 25–45 hari kerja tergantung kompleksitas desain, ukuran, dan jumlah cavity. Estimasi pengiriman dikonfirmasi secara transparan saat penawaran.",
     },
     {
-      q: 'Bagaimana memastikan molding second / bekas masih layak pakai?',
-      a: 'Setiap molding second di katalog kami telah melewati pemeriksaan fisik awal: kondisi core & cavity, keausan slider/pin ejector, serta kelengkapan runner system. Calon pembeli juga dipersilakan melakukan inspeksi fisik langsung.'
+      q: "Bagaimana memastikan molding second / bekas masih layak pakai?",
+      a: "Setiap molding second di katalog kami telah melewati pemeriksaan fisik awal: kondisi core & cavity, keausan slider/pin ejector, serta kelengkapan runner system. Calon pembeli juga dipersilakan melakukan inspeksi fisik langsung.",
     },
     {
-      q: 'Jika saya hanya punya sampel produk fisik tanpa file 3D, apakah bisa?',
-      a: 'Bisa. Kami dapat membantu proses reverse engineering melalui 3D scanning produk dan pembuatan gambar kerja 3D CAD untuk disetujui sebelum mold dibuat.'
+      q: "Jika saya hanya punya sampel produk fisik tanpa file 3D, apakah bisa?",
+      a: "Bisa. Kami dapat membantu proses reverse engineering melalui 3D scanning produk dan pembuatan gambar kerja 3D CAD untuk disetujui sebelum mold dibuat.",
     },
     {
-      q: 'Apakah iLUFA Molding bisa mencocokkan molding dengan tonase mesin kami?',
-      a: 'Ya, Anda cukup memberikan informasi tonase mesin injeksi (misal: 120T, 250T, 450T) dan jarak tie bar. Tim kami akan memastikan dimensi mold base muat dan kapasitas tembak (shot weight) sesuai.'
-    }
+      q: "Apakah iLUFA Molding bisa mencocokkan molding dengan tonase mesin kami?",
+      a: "Ya, Anda cukup memberikan informasi tonase mesin injeksi (misal: 120T, 250T, 450T) dan jarak tie bar. Tim kami akan memastikan dimensi mold base muat dan kapasitas tembak (shot weight) sesuai.",
+    },
   ],
-  productCategories: [
-    'Packaging & Tutup Botol',
-    'Peralatan Rumah Tangga (Houseware)',
-    'Komponen Industri & Otomotif',
-    'Gantungan & Cantolan Plastik'
-  ]
-})
+});
 
 function onCmsUpdated(newCms) {
-  cms.value = { ...cms.value, ...newCms }
+  cms.value = { ...cms.value, ...newCms };
 }
 
-// --- Molds & Molded Products Catalog Data ---
-const menuOpen = ref(false)
-const molds = ref([])
-const moldedProducts = ref([])
-const loadingMolds = ref(true)
-const loadError = ref('')
-const query = ref('')
-const filterType = ref('ALL')
-const selectedMold = ref(null)
+// --- Categories, Molds & Molded Products Catalog Data ---
+const menuOpen = ref(false);
+const categories = ref([]);
+const molds = ref([]);
+const moldedProducts = ref([]);
+const loadingMolds = ref(true);
+const loadError = ref("");
+const query = ref("");
+const filterType = ref("ALL");
+
+// Modals State
+const selectedMold = ref(null);
+const detailModalItem = ref(null);
+const detailModalMode = ref("product");
+
+// Active Categories (Only categories with isVisible !== false)
+const visibleCategories = computed(() => {
+  return categories.value.filter((c) => c.isVisible !== false);
+});
+
+const hiddenCategoryNames = computed(() => {
+  return new Set(
+    categories.value.filter((c) => c.isVisible === false).map((c) => c.name),
+  );
+});
 
 // --- Molded Products Category Filter ---
-const selectedCategory = ref('ALL')
+const selectedCategory = ref("ALL");
+
 const filteredProducts = computed(() => {
-  if (selectedCategory.value === 'ALL') return moldedProducts.value
-  return moldedProducts.value.filter(p => p.category === selectedCategory.value)
-})
+  return moldedProducts.value.filter((p) => {
+    if (p.isVisible === false) return false;
+    if (hiddenCategoryNames.value.has(p.category)) return false;
+    if (selectedCategory.value === "ALL") return true;
+    return p.category === selectedCategory.value;
+  });
+});
 
 const categoriesList = computed(() => {
-  const cats = new Set(moldedProducts.value.map(p => p.category).filter(Boolean))
-  return ['ALL', ...Array.from(cats)]
-})
+  const fromCats = visibleCategories.value.map((c) => c.name);
+  const fromProds = moldedProducts.value
+    .filter(
+      (p) =>
+        p.isVisible !== false && !hiddenCategoryNames.value.has(p.category),
+    )
+    .map((p) => p.category)
+    .filter(Boolean);
+  const merged = Array.from(new Set([...fromCats, ...fromProds]));
+  return ["ALL", ...merged];
+});
+
+function openProductDetail(prod) {
+  detailModalMode.value = "product";
+  detailModalItem.value = prod;
+}
+
+function findCategoryForProduct(prod) {
+  if (!prod) return null;
+  return categories.value.find((c) => c.name === prod.category) || null;
+}
+
+function getExtraImagesCount(prod) {
+  if (
+    Array.isArray(prod.galleryImages) &&
+    prod.galleryImages.filter(Boolean).length > 0
+  ) {
+    return prod.galleryImages.filter(Boolean).length;
+  }
+  const cat = findCategoryForProduct(prod);
+  if (cat && Array.isArray(cat.galleryImages)) {
+    return cat.galleryImages.filter(Boolean).length;
+  }
+  return 0;
+}
 
 // --- FAQ Accordion State ---
-const openFaqIndex = ref(0)
+const openFaqIndex = ref(0);
 function toggleFaq(index) {
-  openFaqIndex.value = openFaqIndex.value === index ? null : index
+  openFaqIndex.value = openFaqIndex.value === index ? null : index;
 }
 
 // --- RFQ Inquiry Form State ---
-const formBusy = ref(false)
-const formMessage = ref('')
-const formError = ref('')
+const formBusy = ref(false);
+const formMessage = ref("");
+const formError = ref("");
 const form = ref({
-  companyName: '', contactName: '', email: '', phone: '', moldType: 'CUSTOM',
-  productNeed: '', dimensions: '', cavity: '', machineInfo: '', budget: '', targetDate: '', notes: '', moldId: null
-})
+  companyName: "",
+  contactName: "",
+  email: "",
+  phone: "",
+  moldType: "CUSTOM",
+  productNeed: "",
+  dimensions: "",
+  cavity: "",
+  machineInfo: "",
+  budget: "",
+  targetDate: "",
+  notes: "",
+  moldId: null,
+});
 
-const filteredMolds = computed(() => molds.value.filter(m => {
-  const matchesType = filterType.value === 'ALL' || m.type === filterType.value
-  const search = query.value.toLowerCase()
-  const matchesQuery = !search || `${m.name} ${m.code} ${m.category}`.toLowerCase().includes(search)
-  return matchesType && matchesQuery
-}))
+// Only show Molds where isVisible !== false and category is not hidden
+const filteredMolds = computed(() =>
+  molds.value.filter((m) => {
+    if (m.isVisible === false) return false;
+    if (hiddenCategoryNames.value.has(m.category)) return false;
+    const matchesType =
+      filterType.value === "ALL" || m.type === filterType.value;
+    const search = query.value.toLowerCase();
+    const matchesQuery =
+      !search ||
+      `${m.name} ${m.code} ${m.category}`.toLowerCase().includes(search);
+    return matchesType && matchesQuery;
+  }),
+);
 
-const typeLabel = (type) => ({ NEW: 'Molding Baru', CUSTOM: 'Custom', USED: 'Second / Bekas' }[type] || type)
-const statusLabel = (status) => ({ AVAILABLE: 'Tersedia', ON_ORDER: 'PO / Indent', NEGOTIATION: 'Negosiasi', SOLD: 'Terjual' }[status] || status)
+const typeLabel = (type) =>
+  ({ NEW: "Molding Baru", CUSTOM: "Custom", USED: "Second / Bekas" })[type] ||
+  type;
+const statusLabel = (status) =>
+  ({
+    AVAILABLE: "Tersedia",
+    ON_ORDER: "PO / Indent",
+    NEGOTIATION: "Negosiasi",
+    SOLD: "Terjual",
+  })[status] || status;
 
 const waLink = computed(() => {
-  const num = cms.value.general.whatsappNumber || WA_DEFAULT
-  const msg = cms.value.general.whatsappMessage || 'Halo iLUFA Molding, saya ingin konsultasi kebutuhan molding injeksi plastik.'
-  return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`
-})
+  const num = cms.value.general.whatsappNumber || WA_DEFAULT;
+  const msg =
+    cms.value.general.whatsappMessage ||
+    "Halo iLUFA Molding, saya ingin konsultasi kebutuhan molding injeksi plastik.";
+  return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+});
 
 async function fetchCMS() {
   try {
-    const res = await fetch(`${API}/cms`)
+    const res = await fetch(`${API}/cms`);
     if (res.ok) {
-      const data = await res.json()
-      if (data.data) cms.value = { ...cms.value, ...data.data }
+      const data = await res.json();
+      if (data.data) cms.value = { ...cms.value, ...data.data };
+    }
+  } catch {}
+}
+
+async function fetchCategories() {
+  try {
+    const res = await fetch(`${API}/categories`);
+    if (res.ok) {
+      const result = await res.json();
+      categories.value = result.data || [];
     }
   } catch {}
 }
 
 async function fetchMolds() {
-  loadingMolds.value = true
-  loadError.value = ''
+  loadingMolds.value = true;
+  loadError.value = "";
   try {
-    const res = await fetch(`${API}/molds`)
-    if (!res.ok) throw new Error('Gagal memuat katalog.')
-    const result = await res.json()
-    molds.value = result.data || []
+    const res = await fetch(`${API}/molds`);
+    if (!res.ok) throw new Error("Gagal memuat katalog.");
+    const result = await res.json();
+    molds.value = result.data || [];
   } catch {
-    loadError.value = 'Katalog belum dapat dimuat dari database.'
+    loadError.value = "Katalog belum dapat dimuat dari database.";
   } finally {
-    loadingMolds.value = false
+    loadingMolds.value = false;
   }
 }
 
 async function fetchMoldedProducts() {
   try {
-    const res = await fetch(`${API}/molded-products`)
+    const res = await fetch(`${API}/molded-products`);
     if (res.ok) {
-      const result = await res.json()
-      moldedProducts.value = result.data || []
+      const result = await res.json();
+      moldedProducts.value = result.data || [];
     }
   } catch {}
 }
 
+async function refreshAllPublicData() {
+  await Promise.all([
+    fetchCMS(),
+    fetchCategories(),
+    fetchMolds(),
+    fetchMoldedProducts(),
+  ]);
+}
+
 async function submitInquiry() {
-  formBusy.value = true; formMessage.value = ''; formError.value = ''
+  formBusy.value = true;
+  formMessage.value = "";
+  formError.value = "";
   try {
     const res = await fetch(`${API}/inquiries`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form.value)
-    })
-    const result = await res.json()
-    if (!res.ok) throw new Error(result.error || 'Permintaan gagal dikirim.')
-    formMessage.value = `Terima kasih! Permintaan Anda tersimpan dengan nomor tiket #${result.data.id}. Tim teknis iLUFA akan segera menghubungi Anda.`
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form.value),
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || "Permintaan gagal dikirim.");
+    formMessage.value = `Terima kasih! Permintaan Anda tersimpan dengan nomor tiket #${result.data.id}. Tim teknis iLUFA akan segera menghubungi Anda.`;
     form.value = {
-      companyName: '', contactName: '', email: '', phone: '', moldType: 'CUSTOM',
-      productNeed: '', dimensions: '', cavity: '', machineInfo: '', budget: '', targetDate: '', notes: '', moldId: null
-    }
+      companyName: "",
+      contactName: "",
+      email: "",
+      phone: "",
+      moldType: "CUSTOM",
+      productNeed: "",
+      dimensions: "",
+      cavity: "",
+      machineInfo: "",
+      budget: "",
+      targetDate: "",
+      notes: "",
+      moldId: null,
+    };
   } catch (error) {
-    formError.value = error.message || 'Tidak dapat mengirim permintaan. Coba lagi.'
+    formError.value =
+      error.message || "Tidak dapat mengirim permintaan. Coba lagi.";
   } finally {
-    formBusy.value = false
+    formBusy.value = false;
   }
 }
 
-function handleRequestQuoteFromModal(mold) {
-  selectedMold.value = null
-  form.value.moldType = mold.type
-  form.value.moldId = mold.id
-  form.value.productNeed = `Saya tertarik dengan ${mold.name} (Kode: ${mold.code}). Mohon info harga penawaran dan spesifikasi detailnya.`
-  jumpTo('rfq')
+function handleRequestQuoteFromMoldModal(mold) {
+  selectedMold.value = null;
+  form.value.moldType = mold.type;
+  form.value.moldId = mold.id;
+  form.value.productNeed = `Saya tertarik dengan ${mold.name} (Kode: ${mold.code}). Mohon info harga penawaran dan spesifikasi detailnya.`;
+  jumpTo("rfq");
+}
+
+function handleRequestQuoteFromProductModal(item) {
+  detailModalItem.value = null;
+  form.value.moldType = "CUSTOM";
+  form.value.productNeed = `Saya tertarik membuat/memesan molding untuk produk "${item.name}" (Kategori: ${item.category}).`;
+  if (item.dimensions) form.value.dimensions = item.dimensions;
+  jumpTo("rfq");
 }
 
 function jumpTo(id) {
-  menuOpen.value = false
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+  menuOpen.value = false;
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 }
 
+function setMetaTag(selector, attrName, attrValue, content) {
+  let el = document.head.querySelector(selector);
+  if (!el) {
+    el = document.createElement("meta");
+    el.setAttribute(attrName, attrValue);
+    document.head.appendChild(el);
+  }
+  el.setAttribute("content", content || "");
+}
+
+function updateSeoHeadAndSchema() {
+  const seo = cms.value.seo || {};
+  const gen = cms.value.general || {};
+  const title =
+    seo.metaTitle ||
+    `${gen.siteName || "iLUFA Molding"} — Jual Molding Injeksi Plastik Bekas, Jasa Pemesanan Molding Import & Pembuatan Molding Plastik Custom`;
+  const desc =
+    seo.metaDescription ||
+    "iLUFA Molding melayani jasa pemesanan molding import baru, pembuatan molding plastik custom sesuai desain 2D/3D & sampel, serta jual molding injeksi plastik bekas (second) siap pakai untuk pabrik manufaktur plastik di Indonesia.";
+  const keywords =
+    seo.metaKeywords ||
+    "jual molding injeksi plastik bekas, jasa pemesanan molding import, pembuatan molding plastik custom, cetakan injeksi plastik, jual mold plastik second, pabrik molding plastik indonesia";
+  const canonicalUrl =
+    seo.canonicalUrl || window.location.origin + window.location.pathname;
+
+  document.title = title;
+  setMetaTag('meta[name="title"]', "name", "title", title);
+  setMetaTag('meta[name="description"]', "name", "description", desc);
+  setMetaTag('meta[name="keywords"]', "name", "keywords", keywords);
+  setMetaTag('meta[property="og:title"]', "property", "og:title", title);
+  setMetaTag(
+    'meta[property="og:description"]',
+    "property",
+    "og:description",
+    desc,
+  );
+  setMetaTag(
+    'meta[property="og:image"]',
+    "property",
+    "og:image",
+    cms.value.hero?.imageUrl || "",
+  );
+  setMetaTag('meta[name="twitter:title"]', "name", "twitter:title", title);
+  setMetaTag(
+    'meta[name="twitter:description"]',
+    "name",
+    "twitter:description",
+    desc,
+  );
+
+  let canonLink = document.head.querySelector('link[rel="canonical"]');
+  if (!canonLink) {
+    canonLink = document.createElement("link");
+    canonLink.setAttribute("rel", "canonical");
+    document.head.appendChild(canonLink);
+  }
+  canonLink.setAttribute("href", canonicalUrl);
+
+  // Build Rich JSON-LD Schema (Organization + Service + FAQPage + ItemList)
+  const faqEntities = (cms.value.faqs || []).map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: f.a,
+    },
+  }));
+
+  const moldCatalogEntities = filteredMolds.value.slice(0, 12).map((m, idx) => ({
+    "@type": "ListItem",
+    position: idx + 1,
+    item: {
+      "@type": "Product",
+      name: m.name,
+      sku: m.code,
+      category: m.category,
+      description:
+        m.description ||
+        `${m.name} - ${typeLabel(m.type)} (${m.category}) di iLUFA Molding`,
+      image: m.imageUrl,
+      brand: {
+        "@type": "Brand",
+        name: gen.siteName || "iLUFA Molding",
+      },
+      offers: {
+        "@type": "Offer",
+        priceCurrency: "IDR",
+        price: "0",
+        availability:
+          m.status === "SOLD"
+            ? "https://schema.org/OutOfStock"
+            : "https://schema.org/InStock",
+        seller: {
+          "@type": "Organization",
+          name: gen.siteName || "iLUFA Molding",
+        },
+      },
+    },
+  }));
+
+  const jsonLdGraph = [
+    {
+      "@type": "IndustrialBusiness",
+      "@id": `${canonicalUrl}#organization`,
+      name: gen.siteName || "iLUFA Molding",
+      description: desc,
+      url: canonicalUrl,
+      telephone: gen.phone || "+62-813-2207-311",
+      email: gen.email || "info@ilufamolding.com",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: gen.address || "Kawasan Industri Cikarang, Bekasi",
+        addressRegion: "Jawa Barat",
+        addressCountry: "ID",
+      },
+      knowsAbout: [
+        "Jual Molding Injeksi Plastik Bekas",
+        "Jasa Pemesanan Molding Import",
+        "Pembuatan Molding Plastik Custom",
+        "Cetakan Injeksi Plastik",
+      ],
+    },
+  ];
+
+  if (faqEntities.length > 0) {
+    jsonLdGraph.push({
+      "@type": "FAQPage",
+      mainEntity: faqEntities,
+    });
+  }
+
+  if (moldCatalogEntities.length > 0) {
+    jsonLdGraph.push({
+      "@type": "ItemList",
+      name: "Katalog Jual Molding Injeksi Plastik Bekas, Import Baru & Custom",
+      itemListElement: moldCatalogEntities,
+    });
+  }
+
+  let scriptEl = document.getElementById("seo-json-ld");
+  if (!scriptEl) {
+    scriptEl = document.createElement("script");
+    scriptEl.id = "seo-json-ld";
+    scriptEl.type = "application/ld+json";
+    document.head.appendChild(scriptEl);
+  }
+  scriptEl.textContent = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": jsonLdGraph,
+  });
+}
+
+watch(
+  [cms, molds],
+  () => {
+    updateSeoHeadAndSchema();
+  },
+  { deep: true },
+);
+
 onMounted(() => {
-  handleHashChange()
-  window.addEventListener('hashchange', handleHashChange)
-  fetchCMS()
-  fetchMolds()
-  fetchMoldedProducts()
-})
+  handleHashChange();
+  window.addEventListener("hashchange", handleHashChange);
+  updateSeoHeadAndSchema();
+  refreshAllPublicData();
+});
 
 onUnmounted(() => {
-  window.removeEventListener('hashchange', handleHashChange)
-})
+  window.removeEventListener("hashchange", handleHashChange);
+});
 </script>
 
 <template>
@@ -294,21 +601,27 @@ onUnmounted(() => {
         :initial-cms="cms"
         @close="setViewMode('site')"
         @cms-updated="onCmsUpdated"
+        @data-updated="refreshAllPublicData"
       />
     </div>
 
     <!-- PUBLIC WEBSITE VIEW -->
-    <div v-else>
+    <div v-else class="site-wrapper">
       <!-- TOPBAR -->
       <div class="topbar">
         <div class="container topbar-inner">
-          <span>{{ cms.general.topbarNotice }}</span>
-          <div style="display: flex; align-items: center; gap: 16px;">
-            <a :href="waLink" target="_blank" rel="noreferrer">
-              <MessageCircle :size="15" /> Konsultasi WhatsApp
+          <span class="topbar-notice">{{ cms.general.topbarNotice }}</span>
+          <div class="topbar-right">
+            <a
+              :href="waLink"
+              target="_blank"
+              rel="noreferrer"
+              class="topbar-wa"
+            >
+              <MessageCircle :size="15" /> <span>Konsultasi WhatsApp</span>
             </a>
             <button class="admin-link-btn" @click="setViewMode('admin')">
-              <Lock :size="12" /> Admin & CMS Portal
+              <Lock :size="12" /> <span>Admin & CMS</span>
             </button>
           </div>
         </div>
@@ -320,12 +633,18 @@ onUnmounted(() => {
           <a href="#" class="brand" aria-label="iLUFA Molding beranda">
             <span class="brand-mark">i</span>
             <span>
-              {{ cms.general.siteName || 'iLUFA MOLDING' }}
-              <small>{{ cms.general.siteTagline || 'INDUSTRIAL MOLD PROCUREMENT' }}</small>
+              {{ cms.general.siteName || "iLUFA MOLDING" }}
+              <small>{{
+                cms.general.siteTagline || "INDUSTRIAL MOLD PROCUREMENT"
+              }}</small>
             </span>
           </a>
 
-          <button class="mobile-toggle" @click="menuOpen = !menuOpen" aria-label="Buka menu">
+          <button
+            class="mobile-toggle"
+            @click="menuOpen = !menuOpen"
+            aria-label="Buka menu"
+          >
             <X v-if="menuOpen" />
             <Menu v-else />
           </button>
@@ -333,7 +652,9 @@ onUnmounted(() => {
           <nav :class="{ 'nav-open': menuOpen }">
             <a href="#layanan" @click="menuOpen = false">Layanan</a>
             <a href="#katalog" @click="menuOpen = false">Katalog Molding</a>
-            <a href="#hasil-cetakan" @click="menuOpen = false">Contoh Hasil Cetak</a>
+            <a href="#hasil-cetakan" @click="menuOpen = false"
+              >Contoh Hasil Cetak</a
+            >
             <a href="#proses" @click="menuOpen = false">Cara Pemesanan</a>
             <a href="#faq" @click="menuOpen = false">FAQ</a>
             <a href="#tentang" @click="menuOpen = false">Tentang Kami</a>
@@ -354,14 +675,17 @@ onUnmounted(() => {
                 <span class="eyebrow-line"></span>
                 {{ cms.hero.eyebrow }}
               </div>
-              <h1 style="white-space: pre-line;">{{ cms.hero.title }}</h1>
+              <h1 style="white-space: pre-line">{{ cms.hero.title }}</h1>
               <p class="hero-desc">{{ cms.hero.subtitle }}</p>
-              
+
               <div class="hero-actions">
                 <button class="btn btn-gold" @click="jumpTo('rfq')">
                   {{ cms.hero.primaryCtaText }} <MoveRight :size="18" />
                 </button>
-                <button class="btn btn-outline-light" @click="jumpTo('katalog')">
+                <button
+                  class="btn btn-outline-light"
+                  @click="jumpTo('katalog')"
+                >
                   {{ cms.hero.secondaryCtaText }}
                 </button>
               </div>
@@ -374,13 +698,20 @@ onUnmounted(() => {
             </div>
 
             <div class="hero-visual">
-              <img :src="cms.hero.imageUrl" alt="Industrial Mold Engineering" />
+              <img
+                :src="cms.hero.imageUrl"
+                alt="Jasa Pemesanan Molding Import, Pembuatan Molding Plastik Custom & Jual Molding Injeksi Plastik Bekas - iLUFA Molding"
+              />
               <div class="visual-shade"></div>
               <div class="hero-label">
                 <span class="label-icon"><Factory :size="22" /></span>
                 <div>
-                  <b>{{ cms.hero.floatingCardTitle || 'Industrial Mold Solutions' }}</b>
-                  <small>{{ cms.hero.floatingCardSubtitle || 'NEW · CUSTOM · SECOND' }}</small>
+                  <b>{{
+                    cms.hero.floatingCardTitle || "Industrial Mold Solutions"
+                  }}</b>
+                  <small>{{
+                    cms.hero.floatingCardSubtitle || "NEW · CUSTOM · SECOND"
+                  }}</small>
                 </div>
               </div>
               <div class="visual-number">
@@ -389,7 +720,9 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <div class="hero-side-note">PRECISION · PROCUREMENT · PARTNERSHIP</div>
+            <div class="hero-side-note">
+              PRECISION · PROCUREMENT · PARTNERSHIP
+            </div>
           </div>
         </section>
 
@@ -398,19 +731,31 @@ onUnmounted(() => {
           <div class="container trust-grid">
             <div>
               <Factory />
-              <span><b>Solusi Industri</b><small>Fokus pada kebutuhan produksi</small></span>
+              <span
+                ><b>Solusi Industri</b
+                ><small>Fokus pada kebutuhan produksi</small></span
+              >
             </div>
             <div>
               <Boxes />
-              <span><b>3 Pilihan Layanan</b><small>Baru, custom, dan second</small></span>
+              <span
+                ><b>3 Pilihan Layanan</b
+                ><small>Baru, custom, dan second</small></span
+              >
             </div>
             <div>
               <ClipboardCheck />
-              <span><b>Proses Terarah</b><small>Spesifikasi hingga pengiriman</small></span>
+              <span
+                ><b>Proses Terarah</b
+                ><small>Spesifikasi hingga pengiriman</small></span
+              >
             </div>
             <div>
               <ShieldCheck />
-              <span><b>Informasi Transparan</b><small>Konfirmasi sebelum transaksi</small></span>
+              <span
+                ><b>Informasi Transparan</b
+                ><small>Konfirmasi sebelum transaksi</small></span
+              >
             </div>
           </div>
         </section>
@@ -420,10 +765,20 @@ onUnmounted(() => {
           <div class="container">
             <div class="section-heading">
               <div>
-                <div class="eyebrow dark"><span class="eyebrow-line"></span> LAYANAN KAMI</div>
-                <h2>Satu partner untuk<br /><span>berbagai kebutuhan mold.</span></h2>
+                <div class="eyebrow dark">
+                  <span class="eyebrow-line"></span> LAYANAN KAMI
+                </div>
+                <h2>
+                  Satu partner untuk<br /><span>berbagai kebutuhan mold.</span>
+                </h2>
               </div>
-              <p>Mulai dari mencari molding siap pakai hingga membuat cetakan berdasarkan desain produk Anda. Spesifikasi dan estimasi dikonfirmasi melalui konsultasi teknis.</p>
+              <p>
+                Melayani <strong>jasa pemesanan molding import</strong> baru,
+                <strong>pembuatan molding plastik custom</strong> berdasarkan
+                desain produk Anda, serta
+                <strong>jual molding injeksi plastik bekas</strong> siap pakai.
+                Spesifikasi dan estimasi dikonfirmasi melalui konsultasi teknis.
+              </p>
             </div>
 
             <div class="service-grid">
@@ -443,7 +798,9 @@ onUnmounted(() => {
                 <p>{{ srv.desc }}</p>
                 <a
                   :href="srv.type === 'USED' ? '#katalog' : '#rfq'"
-                  @click="srv.type !== 'USED' ? form.moldType = srv.type : null"
+                  @click="
+                    srv.type !== 'USED' ? (form.moldType = srv.type) : null
+                  "
                 >
                   {{ srv.ctaText }} <ArrowUpRight :size="16" />
                 </a>
@@ -457,20 +814,37 @@ onUnmounted(() => {
           <div class="container">
             <div class="section-heading catalog-heading">
               <div>
-                <div class="eyebrow dark"><span class="eyebrow-line"></span> KATALOG MOLDING</div>
-                <h2>Temukan opsi yang<br /><span>sesuai kebutuhan Anda.</span></h2>
+                <div class="eyebrow dark">
+                  <span class="eyebrow-line"></span> KATALOG MOLDING
+                </div>
+                <h2>
+                  Temukan opsi yang<br /><span>sesuai kebutuhan Anda.</span>
+                </h2>
               </div>
-              <p>Klik salah satu molding untuk melihat spesifikasi detail (cavity, berat, dimensi base, tonase mesin) dan meminta penawaran resmi.</p>
+              <p>
+                Klik salah satu molding untuk melihat detail spesifikasi lengkap
+                (cavity, berat, dimensi base, tonase mesin) dan meminta
+                penawaran.
+              </p>
             </div>
 
             <div class="catalog-tools">
               <div class="search-box">
                 <Search :size="18" />
-                <input v-model="query" placeholder="Cari nama, kode, kategori..." aria-label="Cari katalog" />
+                <input
+                  v-model="query"
+                  placeholder="Cari nama, kode, kategori..."
+                  aria-label="Cari katalog"
+                />
               </div>
               <div class="filter-tabs">
                 <button
-                  v-for="f in [{label:'Semua',value:'ALL'},{label:'Baru',value:'NEW'},{label:'Custom',value:'CUSTOM'},{label:'Second',value:'USED'}]"
+                  v-for="f in [
+                    { label: 'Semua', value: 'ALL' },
+                    { label: 'Baru', value: 'NEW' },
+                    { label: 'Custom', value: 'CUSTOM' },
+                    { label: 'Second', value: 'USED' },
+                  ]"
                   :key="f.value"
                   :class="{ active: filterType === f.value }"
                   @click="filterType = f.value"
@@ -480,9 +854,12 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <div v-if="loadingMolds" class="empty-state">Memuat katalog molding...</div>
+            <div v-if="loadingMolds" class="empty-state">
+              Memuat katalog molding...
+            </div>
             <div v-else-if="loadError" class="empty-state error-state">
-              {{ loadError }} <button class="text-button" @click="fetchMolds">Coba lagi</button>
+              {{ loadError }}
+              <button class="text-button" @click="fetchMolds">Coba lagi</button>
             </div>
             <div v-else-if="filteredMolds.length" class="mold-grid">
               <article
@@ -490,28 +867,59 @@ onUnmounted(() => {
                 v-for="mold in filteredMolds"
                 :key="mold.id"
                 @click="selectedMold = mold"
-                style="cursor: pointer;"
+                style="cursor: pointer"
               >
                 <div class="mold-image">
-                  <img :src="mold.imageUrl || 'https://images.unsplash.com/photo-1567789884554-0b844b597180?auto=format&fit=crop&w=900&q=80'" :alt="mold.name" loading="lazy" />
+                  <img
+                    :src="
+                      mold.imageUrl ||
+                      'https://images.unsplash.com/photo-1567789884554-0b844b597180?auto=format&fit=crop&w=900&q=80'
+                    "
+                    :alt="`${mold.name} - ${typeLabel(mold.type)} (${mold.category}) di iLUFA Molding`"
+                    loading="lazy"
+                  />
                   <span class="type-tag">{{ typeLabel(mold.type) }}</span>
-                  <span class="status-tag" :class="'status-' + mold.status.toLowerCase()">{{ statusLabel(mold.status) }}</span>
+                  <span
+                    class="status-tag"
+                    :class="'status-' + mold.status.toLowerCase()"
+                    >{{ statusLabel(mold.status) }}</span
+                  >
+                  <span
+                    v-if="
+                      mold.galleryImages &&
+                      mold.galleryImages.filter(Boolean).length > 0
+                    "
+                    class="gallery-pill"
+                  >
+                    +{{ mold.galleryImages.filter(Boolean).length }} Foto Detail
+                  </span>
                 </div>
                 <div class="mold-body">
-                  <div class="mold-code">{{ mold.code }} <span>{{ mold.category }}</span></div>
+                  <div class="mold-code">
+                    {{ mold.code }} <span>{{ mold.category }}</span>
+                  </div>
                   <h3>{{ mold.name }}</h3>
                   <p>{{ mold.description }}</p>
                   <div class="spec-row">
-                    <span v-if="mold.cavity"><b>{{ mold.cavity }}</b> cavity</span>
-                    <span v-if="mold.dimensions"><b>{{ mold.dimensions }}</b></span>
-                    <span v-if="mold.condition"><b>{{ mold.condition }}</b></span>
+                    <span v-if="mold.cavity"
+                      ><b>{{ mold.cavity }}</b> cavity</span
+                    >
+                    <span v-if="mold.dimensions"
+                      ><b>{{ mold.dimensions }}</b></span
+                    >
+                    <span v-if="mold.condition"
+                      ><b>{{ mold.condition }}</b></span
+                    >
                   </div>
                   <div class="mold-footer">
                     <div>
                       <small>HARGA</small>
-                      <b>{{ mold.priceLabel || 'Minta penawaran' }}</b>
+                      <b>{{ mold.priceLabel || "Minta penawaran" }}</b>
                     </div>
-                    <button class="icon-btn" :aria-label="`Detail ${mold.name}`">
+                    <button
+                      class="icon-btn"
+                      :aria-label="`Detail ${mold.name}`"
+                    >
                       <ArrowUpRight />
                     </button>
                   </div>
@@ -519,28 +927,37 @@ onUnmounted(() => {
               </article>
             </div>
             <div v-else class="empty-state">
-              Belum ada item yang cocok dengan pencarian. Coba kata kunci lain atau hubungi admin.
+              Belum ada item molding yang ditampilkan untuk filter ini.
             </div>
 
             <div class="catalog-footnote">
               <ShieldCheck :size="17" />
-              Katalog ini diperbarui secara berkala. Pastikan ketersediaan, kondisi fisik, dan kesesuaian clamping mesin telah dikonfirmasi sebelum proses PO.
+              Katalog ini diperbarui secara berkala. Pastikan ketersediaan,
+              kondisi fisik, dan kesesuaian clamping mesin telah dikonfirmasi
+              sebelum proses PO.
             </div>
           </div>
         </section>
 
-        <!-- KATALOG PRODUK HASIL CETAKAN PLASTIK (SHOWCASE) -->
+        <!-- KATALOG PRODUK HASIL CETAKAN PLASTIK (1 MODEL CARD INFORMASI YANG RAPI) -->
         <section id="hasil-cetakan" class="products-showcase-section">
           <div class="container">
             <div class="section-heading">
               <div>
-                <div class="eyebrow dark"><span class="eyebrow-line"></span> HASIL CETAKAN PLASTIK</div>
+                <div class="eyebrow dark">
+                  <span class="eyebrow-line"></span> HASIL CETAKAN PLASTIK
+                </div>
                 <h2>Contoh produk yang<br /><span>dapat diproduksi.</span></h2>
               </div>
-              <p>Mulai dari peralatan rumah tangga, packaging botol, gantungan, hingga komponen industri berkekuatan tinggi.</p>
+              <p>
+                Mulai dari peralatan rumah tangga, packaging botol, gantungan,
+                hingga komponen industri berkekuatan tinggi. Klik kartu produk
+                untuk melihat detail dan galeri foto.
+              </p>
             </div>
 
-            <div class="catalog-tools mb-6">
+            <!-- FILTER TABS KATEGORI -->
+            <div class="catalog-tools" style="margin-bottom: 24px">
               <div class="filter-tabs">
                 <button
                   v-for="cat in categoriesList"
@@ -548,30 +965,61 @@ onUnmounted(() => {
                   :class="{ active: selectedCategory === cat }"
                   @click="selectedCategory = cat"
                 >
-                  {{ cat === 'ALL' ? 'Semua Kategori' : cat }}
+                  {{ cat === "ALL" ? "Semua Kategori" : cat }}
                 </button>
               </div>
             </div>
 
+            <!-- SATU MODEL CARD GRID INFORMASI -->
             <div v-if="filteredProducts.length === 0" class="empty-state">
-              Belum ada contoh produk hasil cetakan pada kategori ini.
+              Belum ada contoh produk hasil cetakan yang ditampilkan pada
+              kategori ini.
             </div>
             <div v-else class="showcase-grid">
-              <div v-for="prod in filteredProducts" :key="prod.id" class="showcase-card">
+              <article
+                v-for="prod in filteredProducts"
+                :key="prod.id"
+                class="showcase-card"
+                @click="openProductDetail(prod)"
+                style="cursor: pointer"
+              >
                 <div class="showcase-img">
-                  <img :src="prod.imageUrl || 'https://images.unsplash.com/photo-1582738411706-bfc8e691d1c2?auto=format&fit=crop&w=800&q=80'" :alt="prod.name" loading="lazy" />
+                  <img
+                    :src="
+                      prod.imageUrl ||
+                      'https://images.unsplash.com/photo-1582738411706-bfc8e691d1c2?auto=format&fit=crop&w=800&q=80'
+                    "
+                    :alt="`Contoh cetakan plastik ${prod.name} - Pembuatan Molding Plastik Custom ${prod.category}`"
+                    loading="lazy"
+                  />
                   <span class="showcase-cat">{{ prod.category }}</span>
+                  <span
+                    v-if="getExtraImagesCount(prod) > 0"
+                    class="gallery-pill"
+                  >
+                    +{{ getExtraImagesCount(prod) }} Foto Detail
+                  </span>
                 </div>
                 <div class="showcase-body">
                   <h3>{{ prod.name }}</h3>
                   <p>{{ prod.description }}</p>
                   <div class="showcase-specs">
-                    <span v-if="prod.weightEst">Perkiraan Berat: <b>{{ prod.weightEst }}</b></span>
-                    <span v-if="prod.dimensions">Dimensi Produk: <b>{{ prod.dimensions }}</b></span>
-                    <span v-if="prod.moldInfo">Spesifikasi Mold: <b>{{ prod.moldInfo }}</b></span>
+                    <span v-if="prod.weightEst"
+                      >Perkiraan Berat: <b>{{ prod.weightEst }}</b></span
+                    >
+                    <span v-if="prod.dimensions"
+                      >Dimensi Produk: <b>{{ prod.dimensions }}</b></span
+                    >
+                    <span v-if="prod.moldInfo"
+                      >Spesifikasi Mold: <b>{{ prod.moldInfo }}</b></span
+                    >
+                  </div>
+                  <div class="showcase-footer">
+                    <span>Lihat Detail & Galeri Foto</span>
+                    <ArrowUpRight :size="15" />
                   </div>
                 </div>
-              </div>
+              </article>
             </div>
           </div>
         </section>
@@ -580,16 +1028,26 @@ onUnmounted(() => {
         <section class="process-section" id="proses">
           <div class="container process-layout">
             <div class="process-intro">
-              <div class="eyebrow"><span class="eyebrow-line"></span> CARA PEMESANAN</div>
+              <div class="eyebrow">
+                <span class="eyebrow-line"></span> CARA PEMESANAN
+              </div>
               <h2>Jelas dari awal.<br /><span>Terarah sampai kirim.</span></h2>
-              <p>Setiap kebutuhan mold memiliki karakter tersendiri. Kami memastikan setiap spesifikasi dan biaya terkonfirmasi secara transparan sebelum pembayaran.</p>
+              <p>
+                Setiap kebutuhan mold memiliki karakter tersendiri. Kami
+                memastikan setiap spesifikasi dan biaya terkonfirmasi secara
+                transparan sebelum pembayaran.
+              </p>
               <button class="btn btn-gold" @click="jumpTo('rfq')">
                 Mulai Konsultasi <MoveRight :size="18" />
               </button>
             </div>
 
             <div class="process-list">
-              <div v-for="(st, idx) in cms.process" :key="idx" class="process-item">
+              <div
+                v-for="(st, idx) in cms.process"
+                :key="idx"
+                class="process-item"
+              >
                 <span>{{ st.step }}</span>
                 <div>
                   <h3>{{ st.title }}</h3>
@@ -605,20 +1063,30 @@ onUnmounted(() => {
         <section class="rfq-section" id="rfq">
           <div class="container rfq-layout">
             <div class="rfq-copy">
-              <div class="eyebrow"><span class="eyebrow-line"></span> REQUEST FOR QUOTATION</div>
+              <div class="eyebrow">
+                <span class="eyebrow-line"></span> REQUEST FOR QUOTATION
+              </div>
               <h2>Ceritakan kebutuhan<br /><span>molding Anda.</span></h2>
-              <p>Lengkapi informasi kebutuhan cetakan di samping. Tim teknis iLUFA akan menggunakan detail ini untuk menyiapkan kalkulasi penawaran resmi.</p>
-              
+              <p>
+                Lengkapi informasi kebutuhan cetakan di samping. Tim teknis
+                iLUFA akan menggunakan detail ini untuk menyiapkan kalkulasi
+                penawaran resmi.
+              </p>
+
               <div class="rfq-note">
                 <div><Clock3 /></div>
                 <span>
                   <b>Belum punya spesifikasi lengkap?</b>
-                  <small>Tidak masalah. Isi informasi yang sudah Anda ketahui, lalu diskusikan sisanya bersama tim kami.</small>
+                  <small
+                    >Tidak masalah. Isi informasi yang sudah Anda ketahui, lalu
+                    diskusikan sisanya bersama tim kami.</small
+                  >
                 </span>
               </div>
 
               <a class="rfq-wa" :href="waLink" target="_blank" rel="noreferrer">
-                <MessageCircle /> Konsultasi Langsung via WhatsApp <ArrowUpRight />
+                <MessageCircle /> Konsultasi Langsung via WhatsApp
+                <ArrowUpRight />
               </a>
             </div>
 
@@ -634,19 +1102,35 @@ onUnmounted(() => {
               <div class="form-grid">
                 <label>
                   Nama perusahaan / Pabrik *
-                  <input v-model.trim="form.companyName" required placeholder="PT / CV / Nama Usaha" />
+                  <input
+                    v-model.trim="form.companyName"
+                    required
+                    placeholder="PT / CV / Nama Usaha"
+                  />
                 </label>
                 <label>
                   Nama PIC Kontak *
-                  <input v-model.trim="form.contactName" required placeholder="Nama lengkap Anda" />
+                  <input
+                    v-model.trim="form.contactName"
+                    required
+                    placeholder="Nama lengkap Anda"
+                  />
                 </label>
                 <label>
                   Email Resmi
-                  <input v-model.trim="form.email" type="email" placeholder="nama@perusahaan.com" />
+                  <input
+                    v-model.trim="form.email"
+                    type="email"
+                    placeholder="nama@perusahaan.com"
+                  />
                 </label>
                 <label>
                   Nomor WhatsApp / HP *
-                  <input v-model.trim="form.phone" required placeholder="Contoh: 08123456789" />
+                  <input
+                    v-model.trim="form.phone"
+                    required
+                    placeholder="Contoh: 08123456789"
+                  />
                 </label>
                 <label>
                   Jenis Kebutuhan Mold *
@@ -658,23 +1142,40 @@ onUnmounted(() => {
                 </label>
                 <label>
                   Target Jadwal Produksi
-                  <input v-model="form.targetDate" placeholder="Contoh: Segera / 2 Bulan ke depan" />
+                  <input
+                    v-model="form.targetDate"
+                    placeholder="Contoh: Segera / 2 Bulan ke depan"
+                  />
                 </label>
                 <label class="full-field">
                   Deskripsi Kebutuhan Cetakan / Produk *
-                  <textarea v-model.trim="form.productNeed" required rows="3" placeholder="Jelaskan jenis produk plastik yang akan dicetak, estimasi berat, atau referensi mold..."></textarea>
+                  <textarea
+                    v-model.trim="form.productNeed"
+                    required
+                    rows="3"
+                    placeholder="Jelaskan jenis produk plastik yang akan dicetak, estimasi berat, atau referensi mold..."
+                  ></textarea>
                 </label>
                 <label>
                   Dimensi Produk / Mold (jika ada)
-                  <input v-model="form.dimensions" placeholder="Contoh: 15 x 10 cm" />
+                  <input
+                    v-model="form.dimensions"
+                    placeholder="Contoh: 15 x 10 cm"
+                  />
                 </label>
                 <label>
                   Rencana Jumlah Cavity
-                  <input v-model="form.cavity" placeholder="Contoh: 2, 4, 8, 16 Cavity" />
+                  <input
+                    v-model="form.cavity"
+                    placeholder="Contoh: 2, 4, 8, 16 Cavity"
+                  />
                 </label>
                 <label class="full-field">
                   Informasi Mesin Injection Molding
-                  <input v-model="form.machineInfo" placeholder="Merek dan Tonase mesin (misal: Haitian 180T, Toyo 250T)" />
+                  <input
+                    v-model="form.machineInfo"
+                    placeholder="Merek dan Tonase mesin (misal: Haitian 180T, Toyo 250T)"
+                  />
                 </label>
                 <label>
                   Estimasi Budget Pengadaan
@@ -682,19 +1183,33 @@ onUnmounted(() => {
                 </label>
                 <label class="full-field">
                   Catatan Khusus
-                  <textarea v-model="form.notes" rows="2" placeholder="Informasi file gambar 3D CAD (STEP), sampel fisik, atau persyaratan baja mold"></textarea>
+                  <textarea
+                    v-model="form.notes"
+                    rows="2"
+                    placeholder="Informasi file gambar 3D CAD (STEP), sampel fisik, atau persyaratan baja mold"
+                  ></textarea>
                 </label>
               </div>
 
-              <p v-if="formError" class="form-alert form-alert-error">{{ formError }}</p>
+              <p v-if="formError" class="form-alert form-alert-error">
+                {{ formError }}
+              </p>
               <p v-if="formMessage" class="form-alert form-alert-success">
                 <CheckCircle2 :size="18" /> {{ formMessage }}
               </p>
 
               <div class="form-bottom">
-                <small>Informasi kebutuhan Anda dijaga kerahasiaannya dan hanya digunakan untuk menyusun penawaran teknis.</small>
-                <button class="btn btn-primary" type="submit" :disabled="formBusy">
-                  {{ formBusy ? 'Mengirim...' : 'Kirim Permintaan Penawaran' }} <Send :size="16" />
+                <small
+                  >Informasi kebutuhan Anda dijaga kerahasiaannya dan hanya
+                  digunakan untuk menyusun penawaran teknis.</small
+                >
+                <button
+                  class="btn btn-primary"
+                  type="submit"
+                  :disabled="formBusy"
+                >
+                  {{ formBusy ? "Mengirim..." : "Kirim Permintaan Penawaran" }}
+                  <Send :size="16" />
                 </button>
               </div>
             </form>
@@ -704,13 +1219,16 @@ onUnmounted(() => {
         <!-- FAQ SECTION ACCORDION -->
         <section class="faq-section" id="faq">
           <div class="container">
-            <div class="section-heading" style="text-align: center; display: block; margin-bottom: 40px;">
-              <div class="eyebrow dark" style="justify-content: center;">
+            <div class="section-heading faq-heading">
+              <div class="eyebrow dark" style="justify-content: center">
                 <span class="eyebrow-line"></span> FAQ & TANYA JAWAB
               </div>
-              <h2>Pertanyaan yang sering<br /><span>diajukan pelanggan.</span></h2>
-              <p style="margin: 12px auto 0; max-width: 540px;">
-                Semua kejelasan seputar garansi, inspeksi fisik mold second, dan sistem pembayaran termin PO dijelaskan secara terbuka.
+              <h2>
+                Pertanyaan yang sering<br /><span>diajukan pelanggan.</span>
+              </h2>
+              <p>
+                Semua kejelasan seputar garansi, inspeksi fisik mold second, dan
+                sistem pembayaran termin PO dijelaskan secara terbuka.
               </p>
             </div>
 
@@ -737,15 +1255,21 @@ onUnmounted(() => {
         <section class="about-section" id="tentang">
           <div class="container about-layout">
             <div class="about-visual">
-              <img :src="cms.about.imageUrl" alt="Tim teknis iLUFA Molding" loading="lazy" />
+              <img
+                :src="cms.about.imageUrl"
+                alt="Tim teknis iLUFA Molding"
+                loading="lazy"
+              />
               <div class="about-caption">
                 <span>iLUFA</span>
                 <b>{{ cms.about.caption }}</b>
               </div>
             </div>
             <div class="about-copy">
-              <div class="eyebrow dark"><span class="eyebrow-line"></span> {{ cms.about.eyebrow }}</div>
-              <h2 style="white-space: pre-line;">{{ cms.about.title }}</h2>
+              <div class="eyebrow dark">
+                <span class="eyebrow-line"></span> {{ cms.about.eyebrow }}
+              </div>
+              <h2 style="white-space: pre-line">{{ cms.about.title }}</h2>
               <p>{{ cms.about.p1 }}</p>
               <p>{{ cms.about.p2 }}</p>
               <div class="about-points">
@@ -766,7 +1290,10 @@ onUnmounted(() => {
             <div>
               <span>KONSULTASI PENGADAAN MOLDING</span>
               <h2>Punya kebutuhan cetakan plastik spesifik?</h2>
-              <p>Mulai diskusi bersama tim teknis kami. Gambar teknik dan spesifikasi mesin dapat disesuaikan.</p>
+              <p>
+                Mulai diskusi bersama tim teknis kami. Gambar teknik dan
+                spesifikasi mesin dapat disesuaikan.
+              </p>
             </div>
             <button class="btn btn-gold" @click="jumpTo('rfq')">
               Minta Penawaran Sekarang <MoveRight :size="18" />
@@ -781,11 +1308,16 @@ onUnmounted(() => {
           <div class="brand footer-brand">
             <span class="brand-mark">i</span>
             <span>
-              {{ cms.general.siteName || 'iLUFA MOLDING' }}
-              <small>{{ cms.general.siteTagline || 'INDUSTRIAL MOLD PROCUREMENT' }}</small>
+              {{ cms.general.siteName || "iLUFA MOLDING" }}
+              <small>{{
+                cms.general.siteTagline || "INDUSTRIAL MOLD PROCUREMENT"
+              }}</small>
             </span>
           </div>
-          <p>{{ cms.general.address }}<br />Email: {{ cms.general.email }}<br />Telp: {{ cms.general.phone }}</p>
+          <p>
+            {{ cms.general.address }}<br />Email: {{ cms.general.email
+            }}<br />Telp: {{ cms.general.phone }}
+          </p>
           <div class="footer-links">
             <a href="#layanan">Layanan</a>
             <a href="#katalog">Katalog Molding</a>
@@ -793,17 +1325,25 @@ onUnmounted(() => {
             <a href="#proses">Cara Pemesanan</a>
             <a href="#faq">FAQ</a>
             <a href="#rfq">Minta Penawaran</a>
-            <button class="text-button" style="color: #d9aa52; font-size: 11px;" @click="setViewMode('admin')">
-              🔐 CMS & Admin Portal
-            </button>
+            <a
+              class="footer-wa"
+              :href="waLink"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <MessageCircle /> Hubungi via WhatsApp
+            </a>
           </div>
-          <a class="footer-wa" :href="waLink" target="_blank" rel="noreferrer">
-            <MessageCircle /> Hubungi via WhatsApp
-          </a>
         </div>
         <div class="container footer-bottom">
-          <span>© {{ new Date().getFullYear() }} {{ cms.general.siteName }}. All rights reserved.</span>
-          <span>Sistem Pengadaan Molding Injeksi Plastik PO/Indent Terpercaya.</span>
+          <span
+            >© {{ new Date().getFullYear() }} {{ cms.general.siteName }}. All
+            rights reserved.</span
+          >
+          <span
+            >Jual Molding Injeksi Plastik Bekas · Jasa Pemesanan Molding Import
+            · Pembuatan Molding Plastik Custom</span
+          >
         </div>
       </footer>
 
@@ -813,7 +1353,18 @@ onUnmounted(() => {
         :mold="selectedMold"
         :whatsapp="cms.general.whatsappNumber"
         @close="selectedMold = null"
-        @request-quote="handleRequestQuoteFromModal"
+        @request-quote="handleRequestQuoteFromMoldModal"
+      />
+
+      <!-- PRODUCT & CATEGORY DETAIL MODAL -->
+      <ProductDetailModal
+        v-if="detailModalItem"
+        :item="detailModalItem"
+        :mode="detailModalMode"
+        :category-obj="findCategoryForProduct(detailModalItem)"
+        :whatsapp="cms.general.whatsappNumber"
+        @close="detailModalItem = null"
+        @request-quote="handleRequestQuoteFromProductModal"
       />
     </div>
   </div>

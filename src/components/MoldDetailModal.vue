@@ -1,6 +1,6 @@
 <script setup>
-import { computed } from 'vue'
-import { X, ArrowUpRight, MessageCircle, ShieldCheck, CheckCircle2 } from 'lucide-vue-next'
+import { computed, ref, watch } from 'vue'
+import { X, ArrowUpRight, MessageCircle, ShieldCheck } from 'lucide-vue-next'
 
 const props = defineProps({
   mold: { type: Object, default: null },
@@ -8,6 +8,28 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'request-quote'])
+
+const defaultImg = 'https://images.unsplash.com/photo-1567789884554-0b844b597180?auto=format&fit=crop&w=1000&q=80'
+const activeImage = ref('')
+
+const extraImages = computed(() => {
+  if (!props.mold || !Array.isArray(props.mold.galleryImages)) return []
+  return props.mold.galleryImages.map(s => String(s || '').trim()).filter(Boolean).slice(0, 3)
+})
+
+const hasDetailImages = computed(() => extraImages.value.length > 0)
+
+const allImages = computed(() => {
+  if (!props.mold) return []
+  const main = props.mold.imageUrl || defaultImg
+  return [main, ...extraImages.value]
+})
+
+watch(() => props.mold, (newMold) => {
+  if (newMold) {
+    activeImage.value = newMold.imageUrl || defaultImg
+  }
+}, { immediate: true })
 
 const typeLabel = (type) => ({ NEW: 'Molding Import Baru', CUSTOM: 'Molding Custom Sesuai Pesanan', USED: 'Molding Second / Bekas' }[type] || type)
 const statusLabel = (status) => ({ AVAILABLE: 'Tersedia (Ready)', ON_ORDER: 'PO / Indent', NEGOTIATION: 'Dalam Negosiasi', SOLD: 'Terjual' }[status] || status)
@@ -22,14 +44,32 @@ const waLink = computed(() => {
 <template>
   <div v-if="mold" class="mold-modal-backdrop" @click.self="emit('close')">
     <div class="mold-modal-card">
-      <button class="modal-close-icon" @click="emit('close')"><X :size="20" /></button>
+      <button class="modal-close-icon" @click="emit('close')" aria-label="Tutup"><X :size="20" /></button>
       
       <div class="mold-modal-grid">
-        <div class="modal-gallery">
-          <img :src="mold.imageUrl || 'https://images.unsplash.com/photo-1567789884554-0b844b597180?auto=format&fit=crop&w=1000&q=80'" :alt="mold.name" />
-          <div class="modal-tags">
-            <span class="type-badge">{{ typeLabel(mold.type) }}</span>
-            <span class="status-badge" :class="'status-' + mold.status.toLowerCase()">{{ statusLabel(mold.status) }}</span>
+        <!-- LEFT COLUMN: IF NO EXTRA IMAGES, FULL HEIGHT IMAGE WITH NO BLUE BAR -->
+        <div class="modal-gallery-col" :class="{ 'single-image-mode': !hasDetailImages }">
+          <div class="modal-main-img">
+            <img :src="activeImage || defaultImg" :alt="mold.name" />
+            <div class="modal-tags">
+              <span class="type-badge">{{ typeLabel(mold.type) }}</span>
+              <span class="status-badge" :class="'status-' + mold.status.toLowerCase()">{{ statusLabel(mold.status) }}</span>
+            </div>
+          </div>
+
+          <!-- ONLY RENDER THUMBNAIL BAR IF THERE ARE EXTRA DETAIL IMAGES -->
+          <div v-if="hasDetailImages" class="modal-thumbs-bar">
+            <button
+              v-for="(imgUrl, idx) in allImages"
+              :key="idx"
+              type="button"
+              class="thumb-item"
+              :class="{ active: activeImage === imgUrl }"
+              @click="activeImage = imgUrl"
+            >
+              <img :src="imgUrl" :alt="`${mold.name} foto ${idx + 1}`" />
+              <span class="thumb-label">{{ idx === 0 ? 'Utama' : `Detail ${idx}` }}</span>
+            </button>
           </div>
         </div>
 
@@ -38,6 +78,7 @@ const waLink = computed(() => {
             <span class="detail-code">{{ mold.code }} · {{ mold.category }}</span>
             <h2>{{ mold.name }}</h2>
             <p class="detail-desc">{{ mold.description }}</p>
+            <p v-if="mold.detailContent" class="detail-extra">{{ mold.detailContent }}</p>
           </div>
 
           <div class="specs-table-box">
@@ -105,12 +146,12 @@ const waLink = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 16px;
 }
 .mold-modal-card {
   background: white;
   width: 100%;
-  max-width: 880px;
+  max-width: 920px;
   max-height: 92vh;
   overflow-y: auto;
   border-radius: 4px;
@@ -119,8 +160,8 @@ const waLink = computed(() => {
 }
 .modal-close-icon {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 14px;
+  right: 14px;
   border: 0;
   background: white;
   width: 36px;
@@ -130,29 +171,91 @@ const waLink = computed(() => {
   border-radius: 50%;
   cursor: pointer;
   z-index: 10;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
   color: #14283b;
 }
 .mold-modal-grid {
   display: grid;
-  grid-template-columns: 1fr 1.2fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  align-items: stretch;
 }
-.modal-gallery {
+.modal-gallery-col {
+  background: #e9eef2;
+  display: flex;
+  flex-direction: column;
+}
+.modal-main-img {
   position: relative;
-  background: #0b1f33;
-  min-height: 360px;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 340px;
+  overflow: hidden;
 }
-.modal-gallery img {
+.single-image-mode .modal-main-img {
+  min-height: 100%;
+}
+.modal-main-img img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+}
+.modal-thumbs-bar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px;
+  background: #0b1f33;
+  flex-shrink: 0;
+}
+.thumb-item {
+  border: 2px solid transparent;
+  padding: 0;
+  background: #122a40;
+  border-radius: 3px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  height: 64px;
+  transition: all 0.2s;
+}
+.thumb-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.7;
+  display: block;
+}
+.thumb-item.active {
+  border-color: #d9aa52;
+}
+.thumb-item.active img,
+.thumb-item:hover img {
+  opacity: 1;
+}
+.thumb-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(7, 21, 35, 0.82);
+  color: #e2e8f0;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 2px 4px;
+  text-align: center;
 }
 .modal-tags {
   position: absolute;
-  bottom: 16px;
-  left: 16px;
+  bottom: 14px;
+  left: 14px;
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  z-index: 2;
 }
 .type-badge, .status-badge {
   padding: 6px 10px;
@@ -167,7 +270,7 @@ const waLink = computed(() => {
 .status-sold { background: #eee; color: #666; }
 
 .modal-details {
-  padding: 36px 32px;
+  padding: 32px 30px;
   display: flex;
   flex-direction: column;
 }
@@ -180,22 +283,32 @@ const waLink = computed(() => {
 }
 .detail-header h2 {
   font-family: 'Manrope', sans-serif;
-  font-size: 24px;
+  font-size: 23px;
   margin: 6px 0 10px;
   color: #0b1f33;
 }
 .detail-desc {
   font-size: 13px;
   line-height: 1.7;
+  color: #465868;
+  margin: 0 0 10px;
+}
+.detail-extra {
+  font-size: 12px;
+  line-height: 1.75;
   color: #5b6c7c;
-  margin: 0 0 20px;
+  background: #f8fafc;
+  border-left: 3px solid #d9aa52;
+  padding: 10px 14px;
+  margin: 0 0 18px;
+  white-space: pre-line;
 }
 .specs-table-box {
   background: #f7f9fa;
   border: 1px solid #e3e8ed;
-  padding: 18px;
+  padding: 16px 18px;
   border-radius: 3px;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
 }
 .specs-table-box h4 {
   font-family: 'Manrope', sans-serif;
@@ -205,7 +318,7 @@ const waLink = computed(() => {
 }
 .specs-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px 14px;
 }
 .spec-item small {
@@ -220,13 +333,14 @@ const waLink = computed(() => {
 }
 .price-quote-banner {
   border-top: 1px solid #e7ecf0;
-  padding-top: 20px;
+  padding-top: 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 14px;
+  margin-top: auto;
+  margin-bottom: 14px;
 }
 .price-quote-banner small {
   display: block;
@@ -243,6 +357,7 @@ const waLink = computed(() => {
 .modal-actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 .btn-wa {
   background: #25d366;
@@ -253,6 +368,7 @@ const waLink = computed(() => {
   font-weight: 700;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   border-radius: 2px;
   cursor: pointer;
@@ -267,19 +383,22 @@ const waLink = computed(() => {
   color: #71818f;
   font-size: 11px;
   line-height: 1.5;
-  margin-top: 10px;
 }
 .modal-notice svg {
   color: #b78732;
   flex-shrink: 0;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 820px) {
   .mold-modal-grid { grid-template-columns: 1fr; }
-  .modal-gallery { height: 220px; min-height: unset; }
+  .modal-main-img { height: 260px; min-height: 260px; position: relative; }
+  .single-image-mode .modal-main-img { min-height: 260px; }
   .modal-details { padding: 22px 18px; }
+}
+@media (max-width: 520px) {
+  .specs-grid { grid-template-columns: 1fr; gap: 10px; }
+  .price-quote-banner { flex-direction: column; align-items: stretch; }
   .modal-actions { width: 100%; flex-direction: column; }
-  .modal-actions .btn { width: 100%; }
+  .modal-actions .btn, .modal-actions .btn-wa { width: 100%; }
 }
 </style>
-

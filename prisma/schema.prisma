@@ -20,6 +20,20 @@ enum AvailabilityStatus {
   SOLD
 }
 
+model Category {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  slug          String   @unique
+  description   String?  @db.Text
+  detailContent String?  @db.Text
+  imageUrl      String?
+  galleryImages String?  @db.Text
+  isVisible     Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 model Mold {
   id              String             @id @default(cuid())
   code            String             @unique
@@ -28,7 +42,9 @@ model Mold {
   type            MoldType           @default(USED)
   category        String
   description     String             @db.Text
+  detailContent   String?            @db.Text
   imageUrl        String?
+  galleryImages   String?            @db.Text
   dimensions      String?
   weightKg        Float?
   cavity          Int?
@@ -38,6 +54,7 @@ model Mold {
   priceLabel      String?
   status          AvailabilityStatus @default(AVAILABLE)
   featured        Boolean            @default(false)
+  isVisible       Boolean            @default(true)
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   inquiries       Inquiry[]
@@ -70,15 +87,21 @@ model SiteSetting {
 }
 
 model MoldedProduct {
-  id          String   @id @default(cuid())
-  name        String
-  category    String
-  description String?  @db.Text
-  imageUrl    String?
-  weightEst   String?
-  dimensions  String?
-  moldInfo    String?
-  featured    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                String   @id @default(cuid())
+  name              String
+  category          String
+  description       String?  @db.Text
+  detailContent     String?  @db.Text
+  imageUrl          String?
+  galleryImages     String?  @db.Text
+  weightEst         String?
+  dimensions        String?
+  moldInfo          String?
+  materialType      String?
+  cycleTime         String?
+  minMachineTonnage String?
+  featured          Boolean  @default(false)
+  isVisible         Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }

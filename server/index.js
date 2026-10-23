@@ -247,9 +247,7 @@ async function getMergedCMS() {
         const { id, ...clean } = fsCms
         return { ...result, ...clean }
       }
-    } catch (err) {
-      console.warn('Firestore CMS read fallback:', err.message)
-    }
+    } catch {}
   }
 
   // 2. Try PostgreSQL via Prisma
@@ -339,9 +337,7 @@ async function getAllCategories() {
           .map(formatCategoryRecord)
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
       }
-    } catch (err) {
-      console.warn('Firestore categories read fallback:', err.message)
-    }
+    } catch {}
   }
   if (prisma) {
     try {
@@ -376,21 +372,23 @@ app.post('/api/categories', requireAdmin, asyncHandler(async (req, res) => {
   const isVisible = body.isVisible !== undefined ? Boolean(body.isVisible) : true
 
   if (isFirestoreConfigured()) {
-    const id = 'cat_' + Date.now()
-    const newCat = {
-      id,
-      name,
-      slug,
-      description: body.description ? String(body.description).trim() : null,
-      detailContent: body.detailContent ? String(body.detailContent).trim() : null,
-      imageUrl: body.imageUrl || null,
-      galleryImages: galleryArr,
-      isVisible,
-      sortOrder: body.sortOrder ? parseInt(body.sortOrder, 10) : 0,
-      createdAt: new Date().toISOString()
-    }
-    const saved = await fsSetDoc('categories', id, newCat)
-    return res.status(201).json({ ok: true, message: 'Kategori berhasil ditambahkan ke Firestore.', data: formatCategoryRecord(saved) })
+    try {
+      const id = 'cat_' + Date.now()
+      const newCat = {
+        id,
+        name,
+        slug,
+        description: body.description ? String(body.description).trim() : null,
+        detailContent: body.detailContent ? String(body.detailContent).trim() : null,
+        imageUrl: body.imageUrl || null,
+        galleryImages: galleryArr,
+        isVisible,
+        sortOrder: body.sortOrder ? parseInt(body.sortOrder, 10) : 0,
+        createdAt: new Date().toISOString()
+      }
+      const saved = await fsSetDoc('categories', id, newCat)
+      return res.status(201).json({ ok: true, message: 'Kategori berhasil ditambahkan ke Firestore.', data: formatCategoryRecord(saved) })
+    } catch {}
   }
 
   try {
@@ -437,30 +435,33 @@ app.put('/api/categories/:id', requireAdmin, asyncHandler(async (req, res) => {
   const newName = String(body.name).trim()
 
   if (isFirestoreConfigured()) {
-    const existing = await fsGetDoc('categories', id)
-    if (!existing) return res.status(404).json({ error: 'Kategori tidak ditemukan.' })
-    const updatedPayload = {
-      ...existing,
-      name: newName,
-      description: body.description !== undefined ? body.description : existing.description,
-      detailContent: body.detailContent !== undefined ? body.detailContent : existing.detailContent,
-      imageUrl: body.imageUrl !== undefined ? body.imageUrl : existing.imageUrl,
-      galleryImages: body.galleryImages !== undefined ? parseGallery(body.galleryImages) : parseGallery(existing.galleryImages),
-      isVisible: body.isVisible !== undefined ? Boolean(body.isVisible) : existing.isVisible !== false,
-      sortOrder: body.sortOrder !== undefined ? parseInt(body.sortOrder, 10) : existing.sortOrder || 0,
-      updatedAt: new Date().toISOString()
-    }
-    const saved = await fsSetDoc('categories', id, updatedPayload)
-    if (existing.name && existing.name !== newName) {
-      const [molds, prods] = await Promise.all([fsListCollection('molds'), fsListCollection('molded_products')])
-      for (const m of molds.filter(x => x.category === existing.name)) {
-        await fsSetDoc('molds', m.id, { ...m, category: newName })
+    try {
+      const existing = await fsGetDoc('categories', id)
+      if (existing) {
+        const updatedPayload = {
+          ...existing,
+          name: newName,
+          description: body.description !== undefined ? body.description : existing.description,
+          detailContent: body.detailContent !== undefined ? body.detailContent : existing.detailContent,
+          imageUrl: body.imageUrl !== undefined ? body.imageUrl : existing.imageUrl,
+          galleryImages: body.galleryImages !== undefined ? parseGallery(body.galleryImages) : parseGallery(existing.galleryImages),
+          isVisible: body.isVisible !== undefined ? Boolean(body.isVisible) : existing.isVisible !== false,
+          sortOrder: body.sortOrder !== undefined ? parseInt(body.sortOrder, 10) : existing.sortOrder || 0,
+          updatedAt: new Date().toISOString()
+        }
+        const saved = await fsSetDoc('categories', id, updatedPayload)
+        if (existing.name && existing.name !== newName) {
+          const [molds, prods] = await Promise.all([fsListCollection('molds'), fsListCollection('molded_products')])
+          for (const m of molds.filter(x => x.category === existing.name)) {
+            await fsSetDoc('molds', m.id, { ...m, category: newName })
+          }
+          for (const p of prods.filter(x => x.category === existing.name)) {
+            await fsSetDoc('molded_products', p.id, { ...p, category: newName })
+          }
+        }
+        return res.json({ ok: true, message: 'Kategori berhasil diperbarui.', data: formatCategoryRecord(saved) })
       }
-      for (const p of prods.filter(x => x.category === existing.name)) {
-        await fsSetDoc('molded_products', p.id, { ...p, category: newName })
-      }
-    }
-    return res.json({ ok: true, message: 'Kategori berhasil diperbarui.', data: formatCategoryRecord(saved) })
+    } catch {}
   }
 
   try {
@@ -507,10 +508,13 @@ app.patch('/api/categories/:id/visibility', requireAdmin, asyncHandler(async (re
   const nextVal = Boolean(isVisible)
 
   if (isFirestoreConfigured()) {
-    const existing = await fsGetDoc('categories', id)
-    if (!existing) return res.status(404).json({ error: 'Kategori tidak ditemukan.' })
-    const saved = await fsSetDoc('categories', id, { ...existing, isVisible: nextVal })
-    return res.json({ ok: true, data: formatCategoryRecord(saved) })
+    try {
+      const existing = await fsGetDoc('categories', id)
+      if (existing) {
+        const saved = await fsSetDoc('categories', id, { ...existing, isVisible: nextVal })
+        return res.json({ ok: true, data: formatCategoryRecord(saved) })
+      }
+    } catch {}
   }
 
   try {
@@ -535,8 +539,10 @@ app.patch('/api/categories/:id/visibility', requireAdmin, asyncHandler(async (re
 app.delete('/api/categories/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { id } = req.params
   if (isFirestoreConfigured()) {
-    await fsDeleteDoc('categories', id)
-    return res.json({ ok: true, message: 'Kategori berhasil dihapus.' })
+    try {
+      await fsDeleteDoc('categories', id)
+      return res.json({ ok: true, message: 'Kategori berhasil dihapus.' })
+    } catch {}
   }
   try {
     if (!prisma) throw new Error('No Prisma')
@@ -561,9 +567,7 @@ async function getAllMolds() {
           .map(formatMoldRecord)
           .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)))
       }
-    } catch (err) {
-      console.warn('Firestore molds read fallback:', err.message)
-    }
+    } catch {}
   }
   if (prisma) {
     try {
@@ -640,14 +644,16 @@ app.post('/api/molds', requireAdmin, asyncHandler(async (req, res) => {
   }
 
   if (isFirestoreConfigured()) {
-    const id = 'mold_' + Date.now()
-    const saved = await fsSetDoc('molds', id, {
-      id,
-      ...moldData,
-      galleryImages: galleryArr,
-      createdAt: new Date().toISOString()
-    })
-    return res.status(201).json({ ok: true, message: 'Molding berhasil ditambahkan ke Firestore.', data: formatMoldRecord(saved) })
+    try {
+      const id = 'mold_' + Date.now()
+      const saved = await fsSetDoc('molds', id, {
+        id,
+        ...moldData,
+        galleryImages: galleryArr,
+        createdAt: new Date().toISOString()
+      })
+      return res.status(201).json({ ok: true, message: 'Molding berhasil ditambahkan ke Firestore.', data: formatMoldRecord(saved) })
+    } catch {}
   }
 
   try {
@@ -678,33 +684,36 @@ app.put('/api/molds/:id', requireAdmin, asyncHandler(async (req, res) => {
   const body = req.body || {}
 
   if (isFirestoreConfigured()) {
-    const existing = await fsGetDoc('molds', id)
-    if (!existing) return res.status(404).json({ error: 'Molding tidak ditemukan.' })
-    const updatedPayload = {
-      ...existing,
-      name: body.name !== undefined ? String(body.name).trim() : existing.name,
-      code: body.code !== undefined ? String(body.code).trim() : existing.code,
-      slug: body.slug !== undefined ? String(body.slug).trim() : existing.slug,
-      type: body.type || existing.type,
-      category: body.category !== undefined ? String(body.category).trim() : existing.category,
-      description: body.description !== undefined ? String(body.description).trim() : existing.description,
-      detailContent: body.detailContent !== undefined ? body.detailContent : existing.detailContent,
-      imageUrl: body.imageUrl !== undefined ? body.imageUrl : existing.imageUrl,
-      galleryImages: body.galleryImages !== undefined ? parseGallery(body.galleryImages) : parseGallery(existing.galleryImages),
-      dimensions: body.dimensions !== undefined ? body.dimensions : existing.dimensions,
-      weightKg: body.weightKg !== undefined ? (body.weightKg ? parseFloat(body.weightKg) : null) : existing.weightKg,
-      cavity: body.cavity !== undefined ? (body.cavity ? parseInt(body.cavity, 10) : null) : existing.cavity,
-      material: body.material !== undefined ? body.material : existing.material,
-      machineTonnage: body.machineTonnage !== undefined ? body.machineTonnage : existing.machineTonnage,
-      condition: body.condition !== undefined ? body.condition : existing.condition,
-      priceLabel: body.priceLabel !== undefined ? body.priceLabel : existing.priceLabel,
-      status: body.status || existing.status,
-      featured: body.featured !== undefined ? Boolean(body.featured) : existing.featured,
-      isVisible: body.isVisible !== undefined ? Boolean(body.isVisible) : existing.isVisible !== false,
-      updatedAt: new Date().toISOString()
-    }
-    const saved = await fsSetDoc('molds', id, updatedPayload)
-    return res.json({ ok: true, message: 'Data molding berhasil diperbarui.', data: formatMoldRecord(saved) })
+    try {
+      const existing = await fsGetDoc('molds', id)
+      if (existing) {
+        const updatedPayload = {
+          ...existing,
+          name: body.name !== undefined ? String(body.name).trim() : existing.name,
+          code: body.code !== undefined ? String(body.code).trim() : existing.code,
+          slug: body.slug !== undefined ? String(body.slug).trim() : existing.slug,
+          type: body.type || existing.type,
+          category: body.category !== undefined ? String(body.category).trim() : existing.category,
+          description: body.description !== undefined ? String(body.description).trim() : existing.description,
+          detailContent: body.detailContent !== undefined ? body.detailContent : existing.detailContent,
+          imageUrl: body.imageUrl !== undefined ? body.imageUrl : existing.imageUrl,
+          galleryImages: body.galleryImages !== undefined ? parseGallery(body.galleryImages) : parseGallery(existing.galleryImages),
+          dimensions: body.dimensions !== undefined ? body.dimensions : existing.dimensions,
+          weightKg: body.weightKg !== undefined ? (body.weightKg ? parseFloat(body.weightKg) : null) : existing.weightKg,
+          cavity: body.cavity !== undefined ? (body.cavity ? parseInt(body.cavity, 10) : null) : existing.cavity,
+          material: body.material !== undefined ? body.material : existing.material,
+          machineTonnage: body.machineTonnage !== undefined ? body.machineTonnage : existing.machineTonnage,
+          condition: body.condition !== undefined ? body.condition : existing.condition,
+          priceLabel: body.priceLabel !== undefined ? body.priceLabel : existing.priceLabel,
+          status: body.status || existing.status,
+          featured: body.featured !== undefined ? Boolean(body.featured) : existing.featured,
+          isVisible: body.isVisible !== undefined ? Boolean(body.isVisible) : existing.isVisible !== false,
+          updatedAt: new Date().toISOString()
+        }
+        const saved = await fsSetDoc('molds', id, updatedPayload)
+        return res.json({ ok: true, message: 'Data molding berhasil diperbarui.', data: formatMoldRecord(saved) })
+      }
+    } catch {}
   }
 
   try {
@@ -757,10 +766,13 @@ app.patch('/api/molds/:id/visibility', requireAdmin, asyncHandler(async (req, re
   const nextVal = Boolean(isVisible)
 
   if (isFirestoreConfigured()) {
-    const existing = await fsGetDoc('molds', id)
-    if (!existing) return res.status(404).json({ error: 'Molding tidak ditemukan.' })
-    const saved = await fsSetDoc('molds', id, { ...existing, isVisible: nextVal })
-    return res.json({ ok: true, data: formatMoldRecord(saved) })
+    try {
+      const existing = await fsGetDoc('molds', id)
+      if (existing) {
+        const saved = await fsSetDoc('molds', id, { ...existing, isVisible: nextVal })
+        return res.json({ ok: true, data: formatMoldRecord(saved) })
+      }
+    } catch {}
   }
 
   try {
@@ -785,8 +797,10 @@ app.patch('/api/molds/:id/visibility', requireAdmin, asyncHandler(async (req, re
 app.delete('/api/molds/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { id } = req.params
   if (isFirestoreConfigured()) {
-    await fsDeleteDoc('molds', id)
-    return res.json({ ok: true, message: 'Molding berhasil dihapus.' })
+    try {
+      await fsDeleteDoc('molds', id)
+      return res.json({ ok: true, message: 'Molding berhasil dihapus.' })
+    } catch {}
   }
   try {
     if (!prisma) throw new Error('No Prisma')
@@ -811,9 +825,7 @@ async function getAllProducts() {
           .map(formatProductRecord)
           .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)))
       }
-    } catch (err) {
-      console.warn('Firestore products read fallback:', err.message)
-    }
+    } catch {}
   }
   if (prisma) {
     try {
@@ -858,14 +870,16 @@ app.post('/api/molded-products', requireAdmin, asyncHandler(async (req, res) => 
   }
 
   if (isFirestoreConfigured()) {
-    const id = 'prod_' + Date.now()
-    const saved = await fsSetDoc('molded_products', id, {
-      id,
-      ...prodData,
-      galleryImages: galleryArr,
-      createdAt: new Date().toISOString()
-    })
-    return res.status(201).json({ ok: true, data: formatProductRecord(saved) })
+    try {
+      const id = 'prod_' + Date.now()
+      const saved = await fsSetDoc('molded_products', id, {
+        id,
+        ...prodData,
+        galleryImages: galleryArr,
+        createdAt: new Date().toISOString()
+      })
+      return res.status(201).json({ ok: true, data: formatProductRecord(saved) })
+    } catch {}
   }
 
   try {
@@ -896,28 +910,31 @@ app.put('/api/molded-products/:id', requireAdmin, asyncHandler(async (req, res) 
   const body = req.body || {}
 
   if (isFirestoreConfigured()) {
-    const existing = await fsGetDoc('molded_products', id)
-    if (!existing) return res.status(404).json({ error: 'Produk tidak ditemukan.' })
-    const updatedPayload = {
-      ...existing,
-      name: body.name !== undefined ? String(body.name).trim() : existing.name,
-      category: body.category !== undefined ? String(body.category).trim() : existing.category,
-      description: body.description !== undefined ? body.description : existing.description,
-      detailContent: body.detailContent !== undefined ? body.detailContent : existing.detailContent,
-      imageUrl: body.imageUrl !== undefined ? body.imageUrl : existing.imageUrl,
-      galleryImages: body.galleryImages !== undefined ? parseGallery(body.galleryImages) : parseGallery(existing.galleryImages),
-      weightEst: body.weightEst !== undefined ? body.weightEst : existing.weightEst,
-      dimensions: body.dimensions !== undefined ? body.dimensions : existing.dimensions,
-      moldInfo: body.moldInfo !== undefined ? body.moldInfo : existing.moldInfo,
-      materialType: body.materialType !== undefined ? body.materialType : existing.materialType,
-      cycleTime: body.cycleTime !== undefined ? body.cycleTime : existing.cycleTime,
-      minMachineTonnage: body.minMachineTonnage !== undefined ? body.minMachineTonnage : existing.minMachineTonnage,
-      featured: body.featured !== undefined ? Boolean(body.featured) : existing.featured,
-      isVisible: body.isVisible !== undefined ? Boolean(body.isVisible) : existing.isVisible !== false,
-      updatedAt: new Date().toISOString()
-    }
-    const saved = await fsSetDoc('molded_products', id, updatedPayload)
-    return res.json({ ok: true, data: formatProductRecord(saved) })
+    try {
+      const existing = await fsGetDoc('molded_products', id)
+      if (existing) {
+        const updatedPayload = {
+          ...existing,
+          name: body.name !== undefined ? String(body.name).trim() : existing.name,
+          category: body.category !== undefined ? String(body.category).trim() : existing.category,
+          description: body.description !== undefined ? body.description : existing.description,
+          detailContent: body.detailContent !== undefined ? body.detailContent : existing.detailContent,
+          imageUrl: body.imageUrl !== undefined ? body.imageUrl : existing.imageUrl,
+          galleryImages: body.galleryImages !== undefined ? parseGallery(body.galleryImages) : parseGallery(existing.galleryImages),
+          weightEst: body.weightEst !== undefined ? body.weightEst : existing.weightEst,
+          dimensions: body.dimensions !== undefined ? body.dimensions : existing.dimensions,
+          moldInfo: body.moldInfo !== undefined ? body.moldInfo : existing.moldInfo,
+          materialType: body.materialType !== undefined ? body.materialType : existing.materialType,
+          cycleTime: body.cycleTime !== undefined ? body.cycleTime : existing.cycleTime,
+          minMachineTonnage: body.minMachineTonnage !== undefined ? body.minMachineTonnage : existing.minMachineTonnage,
+          featured: body.featured !== undefined ? Boolean(body.featured) : existing.featured,
+          isVisible: body.isVisible !== undefined ? Boolean(body.isVisible) : existing.isVisible !== false,
+          updatedAt: new Date().toISOString()
+        }
+        const saved = await fsSetDoc('molded_products', id, updatedPayload)
+        return res.json({ ok: true, data: formatProductRecord(saved) })
+      }
+    } catch {}
   }
 
   try {
@@ -965,10 +982,13 @@ app.patch('/api/molded-products/:id/visibility', requireAdmin, asyncHandler(asyn
   const nextVal = Boolean(isVisible)
 
   if (isFirestoreConfigured()) {
-    const existing = await fsGetDoc('molded_products', id)
-    if (!existing) return res.status(404).json({ error: 'Produk tidak ditemukan.' })
-    const saved = await fsSetDoc('molded_products', id, { ...existing, isVisible: nextVal })
-    return res.json({ ok: true, data: formatProductRecord(saved) })
+    try {
+      const existing = await fsGetDoc('molded_products', id)
+      if (existing) {
+        const saved = await fsSetDoc('molded_products', id, { ...existing, isVisible: nextVal })
+        return res.json({ ok: true, data: formatProductRecord(saved) })
+      }
+    } catch {}
   }
 
   try {
@@ -993,8 +1013,10 @@ app.patch('/api/molded-products/:id/visibility', requireAdmin, asyncHandler(asyn
 app.delete('/api/molded-products/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { id } = req.params
   if (isFirestoreConfigured()) {
-    await fsDeleteDoc('molded_products', id)
-    return res.json({ ok: true, message: 'Produk berhasil dihapus.' })
+    try {
+      await fsDeleteDoc('molded_products', id)
+      return res.json({ ok: true, message: 'Produk berhasil dihapus.' })
+    } catch {}
   }
   try {
     if (!prisma) throw new Error('No Prisma')
@@ -1014,9 +1036,7 @@ async function getAllInquiries() {
     try {
       const docs = await fsListCollection('inquiries')
       return docs.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
-    } catch (err) {
-      console.warn('Firestore inquiries read fallback:', err.message)
-    }
+    } catch {}
   }
   if (prisma) {
     try {
@@ -1056,13 +1076,15 @@ app.post('/api/inquiries', asyncHandler(async (req, res) => {
   }
 
   if (isFirestoreConfigured()) {
-    const id = 'inq_' + Date.now()
-    await fsSetDoc('inquiries', id, {
-      id,
-      ...inqData,
-      createdAt: new Date().toISOString()
-    })
-    return res.status(201).json({ message: 'Permintaan penawaran berhasil dikirim.', data: { id } })
+    try {
+      const id = 'inq_' + Date.now()
+      await fsSetDoc('inquiries', id, {
+        id,
+        ...inqData,
+        createdAt: new Date().toISOString()
+      })
+      return res.status(201).json({ message: 'Permintaan penawaran berhasil dikirim.', data: { id } })
+    } catch {}
   }
 
   try {
@@ -1092,15 +1114,18 @@ app.patch('/api/inquiries/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { status, notes } = req.body || {}
 
   if (isFirestoreConfigured()) {
-    const existing = await fsGetDoc('inquiries', id)
-    if (!existing) return res.status(404).json({ error: 'Penawaran tidak ditemukan.' })
-    const updated = await fsSetDoc('inquiries', id, {
-      ...existing,
-      ...(status ? { status } : {}),
-      ...(notes !== undefined ? { notes } : {}),
-      updatedAt: new Date().toISOString()
-    })
-    return res.json({ ok: true, message: 'Status penawaran berhasil diperbarui.', data: updated })
+    try {
+      const existing = await fsGetDoc('inquiries', id)
+      if (existing) {
+        const updated = await fsSetDoc('inquiries', id, {
+          ...existing,
+          ...(status ? { status } : {}),
+          ...(notes !== undefined ? { notes } : {}),
+          updatedAt: new Date().toISOString()
+        })
+        return res.json({ ok: true, message: 'Status penawaran berhasil diperbarui.', data: updated })
+      }
+    } catch {}
   }
 
   try {
@@ -1126,8 +1151,10 @@ app.patch('/api/inquiries/:id', requireAdmin, asyncHandler(async (req, res) => {
 app.delete('/api/inquiries/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { id } = req.params
   if (isFirestoreConfigured()) {
-    await fsDeleteDoc('inquiries', id)
-    return res.json({ ok: true, message: 'Penawaran berhasil dihapus.' })
+    try {
+      await fsDeleteDoc('inquiries', id)
+      return res.json({ ok: true, message: 'Penawaran berhasil dihapus.' })
+    } catch {}
   }
   try {
     if (!prisma) throw new Error('No Prisma')
@@ -1190,8 +1217,10 @@ app.put('/api/cms', requireAdmin, asyncHandler(async (req, res) => {
   const merged = { ...current, ...newContent }
 
   if (isFirestoreConfigured()) {
-    await fsSetDoc('site_settings', 'cms', merged)
-    return res.json({ ok: true, message: 'Konten website berhasil disimpan ke Firestore.', data: merged })
+    try {
+      await fsSetDoc('site_settings', 'cms', merged)
+      return res.json({ ok: true, message: 'Konten website berhasil disimpan ke Firestore.', data: merged })
+    } catch {}
   }
 
   if (prisma) {
@@ -1212,8 +1241,10 @@ app.put('/api/cms', requireAdmin, asyncHandler(async (req, res) => {
 
 app.post('/api/cms/reset', requireAdmin, asyncHandler(async (_req, res) => {
   if (isFirestoreConfigured()) {
-    await fsSetDoc('site_settings', 'cms', DEFAULT_CMS)
-    return res.json({ ok: true, message: 'Konten website berhasil direset ke standar.', data: DEFAULT_CMS })
+    try {
+      await fsSetDoc('site_settings', 'cms', DEFAULT_CMS)
+      return res.json({ ok: true, message: 'Konten website berhasil direset ke standar.', data: DEFAULT_CMS })
+    } catch {}
   }
 
   if (prisma) {

@@ -64,6 +64,18 @@ function parseServiceAccountFromEnv() {
 
 let cachedAccessToken = null
 let tokenExpiresAt = 0
+let firestoreTemporarilySuspendedUntil = 0
+let permissionWarnedOnce = false
+
+export function isFirestoreAvailable() {
+  if (!parseServiceAccountFromEnv()?.projectId) return false
+  if (Date.now() < firestoreTemporarilySuspendedUntil) return false
+  return true
+}
+
+export function isFirestoreConfigured() {
+  return isFirestoreAvailable()
+}
 
 function base64UrlEncode(input) {
   const buf = Buffer.isBuffer(input) ? input : Buffer.from(String(input), 'utf-8')
@@ -190,10 +202,6 @@ function jsToDocFields(obj) {
   return { fields }
 }
 
-export function isFirestoreConfigured() {
-  return Boolean(parseServiceAccountFromEnv()?.projectId)
-}
-
 async function firestoreRequest(pathSuffix, options = {}) {
   const creds = parseServiceAccountFromEnv()
   if (!creds?.projectId) {
@@ -226,8 +234,22 @@ async function firestoreRequest(pathSuffix, options = {}) {
   if (res.status === 404) return null
   if (!res.ok) {
     const errText = await res.text()
+    if (res.status === 403) {
+      // Suspend Firestore requests for 30s so we don't spam console or fail writes while user updates Firestore Rules
+      firestoreTemporarilySuspendedUntil = Date.now() + 30000
+      if (!permissionWarnedOnce) {
+        permissionWarnedOnce = true
+        console.warn(
+          '\n⚠️  [Firestore 403 Permission Denied]: Firestore Rules pada project "ilufa-molding" masih terkunci.\n' +
+          '   👉 Silakan buka Firebase Console -> Firestore Database -> tab Rules, lalu ubah menjadi:\n' +
+          '      allow read, write: if true;\n' +
+          '   (Sementara itu, aplikasi otomatis menggunakan PostgreSQL / Local JSON fallback tanpa error).\n'
+        )
+      }
+    }
     throw new Error(`Firestore REST error (${res.status}): ${errText}`)
   }
+  permissionWarnedOnce = false
   return res.json()
 }
 
@@ -304,7 +326,9 @@ export async function ensureFirestoreSeeded() {
 
     seededOnce = true
   } catch (err) {
-    console.warn('Firestore auto-seed warning:', err.message)
+    if (!String(err.message).includes('403')) {
+      console.warn('Firestore auto-seed warning:', err.message)
+    }
   }
 }
 

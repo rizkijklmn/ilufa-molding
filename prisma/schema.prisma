@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MoldType {
+  NEW
+  CUSTOM
+  USED
+}
+
+enum AvailabilityStatus {
+  AVAILABLE
+  ON_ORDER
+  NEGOTIATION
+  SOLD
+}
+
+model Mold {
+  id              String             @id @default(cuid())
+  code            String             @unique
+  name            String
+  slug            String             @unique
+  type            MoldType           @default(USED)
+  category        String
+  description     String             @db.Text
+  imageUrl        String?
+  dimensions      String?
+  weightKg        Float?
+  cavity          Int?
+  material        String?
+  machineTonnage  String?
+  condition       String?
+  priceLabel      String?
+  status          AvailabilityStatus @default(AVAILABLE)
+  featured        Boolean            @default(false)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  inquiries       Inquiry[]
+}
+
+model Inquiry {
+  id              String   @id @default(cuid())
+  companyName     String
+  contactName     String
+  email           String?
+  phone           String
+  moldType        String
+  productNeed     String   @db.Text
+  dimensions      String?
+  cavity          String?
+  machineInfo     String?
+  budget          String?
+  targetDate      String?
+  notes           String?  @db.Text
+  status          String   @default("NEW")
+  moldId          String?
+  mold            Mold?    @relation(fields: [moldId], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+}
+
+model SiteSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
+model MoldedProduct {
+  id          String   @id @default(cuid())
+  name        String
+  category    String
+  description String?  @db.Text
+  imageUrl    String?
+  weightEst   String?
+  dimensions  String?
+  moldInfo    String?
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

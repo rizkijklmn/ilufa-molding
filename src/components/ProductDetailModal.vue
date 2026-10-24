@@ -1,74 +1,101 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
-import { X, ArrowUpRight, MessageCircle, Layers, ShieldCheck } from 'lucide-vue-next'
+import { computed, ref, watch } from "vue";
+import {
+  X,
+  ArrowUpRight,
+  MessageCircle,
+  Layers,
+  ShieldCheck,
+} from "lucide-vue-next";
 
 const props = defineProps({
   item: { type: Object, default: null },
   categoryObj: { type: Object, default: null },
-  mode: { type: String, default: 'product' }, // 'product' or 'category'
-  whatsapp: { type: String, default: '628132207311' },
-  lang: { type: String, default: 'id' }
-})
+  mode: { type: String, default: "product" }, // 'product' or 'category'
+  whatsapp: { type: String, default: "6289676181754" },
+  lang: { type: String, default: "id" },
+});
 
-const emit = defineEmits(['close', 'request-quote'])
+const emit = defineEmits(["close", "request-quote"]);
 
-const isEn = computed(() => props.lang === 'en')
+const isEn = computed(() => props.lang === "en");
 
-const defaultImg = 'https://images.unsplash.com/photo-1582738411706-bfc8e691d1c2?auto=format&fit=crop&w=900&q=80'
-const activeImage = ref('')
+const defaultImg =
+  "https://images.unsplash.com/photo-1582738411706-bfc8e691d1c2?auto=format&fit=crop&w=900&q=80";
+const activeImage = ref("");
 
 const extraImages = computed(() => {
-  if (!props.item) return []
+  if (!props.item) return [];
   const itemGallery = Array.isArray(props.item.galleryImages)
-    ? props.item.galleryImages.map(s => String(s || '').trim()).filter(Boolean)
-    : []
-  if (itemGallery.length > 0) return itemGallery.slice(0, 3)
+    ? props.item.galleryImages
+        .map((s) => String(s || "").trim())
+        .filter(Boolean)
+    : [];
+  if (itemGallery.length > 0) return itemGallery.slice(0, 3);
 
   // Fallback to category gallery if item has none
   if (props.categoryObj && Array.isArray(props.categoryObj.galleryImages)) {
-    return props.categoryObj.galleryImages.map(s => String(s || '').trim()).filter(Boolean).slice(0, 3)
+    return props.categoryObj.galleryImages
+      .map((s) => String(s || "").trim())
+      .filter(Boolean)
+      .slice(0, 3);
   }
-  return []
-})
+  return [];
+});
 
-const hasDetailImages = computed(() => extraImages.value.length > 0)
+const hasDetailImages = computed(() => extraImages.value.length > 0);
 
 const allImages = computed(() => {
-  if (!props.item) return []
-  const main = props.item.imageUrl || props.categoryObj?.imageUrl || defaultImg
-  return [main, ...extraImages.value]
-})
+  if (!props.item) return [];
+  const main = props.item.imageUrl || props.categoryObj?.imageUrl || defaultImg;
+  return [main, ...extraImages.value];
+});
 
-watch(() => props.item, (newVal) => {
-  if (newVal) {
-    activeImage.value = newVal.imageUrl || props.categoryObj?.imageUrl || defaultImg
-  }
-}, { immediate: true })
+watch(
+  () => props.item,
+  (newVal) => {
+    if (newVal) {
+      activeImage.value =
+        newVal.imageUrl || props.categoryObj?.imageUrl || defaultImg;
+    }
+  },
+  { immediate: true },
+);
 
 const waLink = computed(() => {
-  if (!props.item) return '#'
-  const label = props.mode === 'category'
-    ? `kategori molding "${props.item.name}"`
-    : `pembuatan mold untuk produk "${props.item.name}" (${props.item.category})`
-  const msg = `Halo iLUFA Molding, saya ingin konsultasi mengenai ${label}. Mohon informasi spesifikasi dan penawarannya.`
-  return `https://wa.me/${props.whatsapp}?text=${encodeURIComponent(msg)}`
-})
+  if (!props.item) return "#";
+  const label =
+    props.mode === "category"
+      ? `kategori molding "${props.item.name}"`
+      : `pembuatan mold untuk produk "${props.item.name}" (${props.item.category})`;
+  const msg = `Halo iLUFA Molding, saya ingin konsultasi mengenai ${label}. Mohon informasi spesifikasi dan penawarannya.`;
+  return `https://wa.me/${props.whatsapp}?text=${encodeURIComponent(msg)}`;
+});
 </script>
 
 <template>
   <div v-if="item" class="prod-modal-backdrop" @click.self="emit('close')">
     <div class="prod-modal-card">
-      <button class="modal-close-icon" @click="emit('close')" aria-label="Tutup"><X :size="20" /></button>
+      <button
+        class="modal-close-icon"
+        @click="emit('close')"
+        aria-label="Tutup"
+      >
+        <X :size="20" />
+      </button>
 
       <div class="prod-modal-grid">
         <!-- LEFT: IMAGE GALLERY (Full height with no blue bar if no detail images) -->
-        <div class="modal-gallery-col" :class="{ 'single-image-mode': !hasDetailImages }">
+        <div
+          class="modal-gallery-col"
+          :class="{ 'single-image-mode': !hasDetailImages }"
+        >
           <div class="modal-main-img">
             <img :src="activeImage || defaultImg" :alt="item.name" />
             <div class="modal-tags">
               <span class="cat-badge">
                 <Layers :size="12" />
-                {{ mode === 'category' ? 'Detail Kategori' : item.category }}
+                {{ mode === "category" ? "Detail Kategori" : item.category }}
               </span>
             </div>
           </div>
@@ -84,7 +111,9 @@ const waLink = computed(() => {
               @click="activeImage = imgUrl"
             >
               <img :src="imgUrl" :alt="`${item.name} gambar ${idx + 1}`" />
-              <span class="thumb-label">{{ idx === 0 ? 'Utama' : `Detail ${idx}` }}</span>
+              <span class="thumb-label">{{
+                idx === 0 ? "Utama" : `Detail ${idx}`
+              }}</span>
             </button>
           </div>
         </div>
@@ -93,10 +122,16 @@ const waLink = computed(() => {
         <div class="modal-details">
           <div class="detail-header">
             <span class="detail-eyebrow">
-              {{ mode === 'category' ? 'INFORMASI & DETAIL KATEGORI' : `CONTOH HASIL CETAKAN · ${item.category}` }}
+              {{
+                mode === "category"
+                  ? "INFORMASI & DETAIL KATEGORI"
+                  : `CONTOH HASIL CETAKAN · ${item.category}`
+              }}
             </span>
             <h2>{{ item.name }}</h2>
-            <p v-if="item.description" class="detail-desc">{{ item.description }}</p>
+            <p v-if="item.description" class="detail-desc">
+              {{ item.description }}
+            </p>
             <div v-if="item.detailContent" class="detail-box">
               <b>Penjelasan Detail & Aplikasi:</b>
               <p>{{ item.detailContent }}</p>
@@ -105,56 +140,120 @@ const waLink = computed(() => {
 
           <!-- PRODUCT TECHNICAL SPECS -->
           <div v-if="mode === 'product'" class="specs-table-box">
-            <h4>{{ isEn ? 'Product Specifications & Mold Requirements' : 'Spesifikasi Produk & Kebutuhan Mold' }}</h4>
+            <h4>
+              {{
+                isEn
+                  ? "Product Specifications & Mold Requirements"
+                  : "Spesifikasi Produk & Kebutuhan Mold"
+              }}
+            </h4>
             <div class="specs-grid">
               <div class="spec-item">
-                <small>{{ isEn ? 'Estimated Product Weight' : 'Perkiraan Berat Produk' }}</small>
-                <b>{{ item.weightEst || (isEn ? 'Per design' : 'Sesuai desain') }}</b>
+                <small>{{
+                  isEn ? "Estimated Product Weight" : "Perkiraan Berat Produk"
+                }}</small>
+                <b>{{
+                  item.weightEst || (isEn ? "Per design" : "Sesuai desain")
+                }}</b>
               </div>
               <div class="spec-item">
-                <small>{{ isEn ? 'Dimensions / Size' : 'Dimensi / Ukuran' }}</small>
-                <b>{{ item.dimensions || (isEn ? 'Per sample' : 'Sesuai sampel') }}</b>
+                <small>{{
+                  isEn ? "Dimensions / Size" : "Dimensi / Ukuran"
+                }}</small>
+                <b>{{
+                  item.dimensions || (isEn ? "Per sample" : "Sesuai sampel")
+                }}</b>
               </div>
               <div class="spec-item">
-                <small>{{ isEn ? 'Recommended Mold Specs' : 'Rekomendasi Spesifikasi Mold' }}</small>
-                <b>{{ item.moldInfo || 'Single / Multi-Cavity' }}</b>
+                <small>{{
+                  isEn
+                    ? "Recommended Mold Specs"
+                    : "Rekomendasi Spesifikasi Mold"
+                }}</small>
+                <b>{{ item.moldInfo || "Single / Multi-Cavity" }}</b>
               </div>
               <div class="spec-item">
-                <small>{{ isEn ? 'Plastic Resin Material' : 'Material Resin Plastik' }}</small>
-                <b>{{ item.materialType || (isEn ? 'PP / HDPE / ABS / Custom' : 'PP / HDPE / ABS / Sesuai kebutuhan') }}</b>
+                <small>{{
+                  isEn ? "Plastic Resin Material" : "Material Resin Plastik"
+                }}</small>
+                <b>{{
+                  item.materialType ||
+                  (isEn
+                    ? "PP / HDPE / ABS / Custom"
+                    : "PP / HDPE / ABS / Sesuai kebutuhan")
+                }}</b>
               </div>
               <div class="spec-item">
-                <small>{{ isEn ? 'Estimated Cycle Time' : 'Estimasi Siklus Cetak' }}</small>
-                <b>{{ item.cycleTime || (isEn ? 'Customized per cooling design' : 'Disesuaikan desain pendingin') }}</b>
+                <small>{{
+                  isEn ? "Estimated Cycle Time" : "Estimasi Siklus Cetak"
+                }}</small>
+                <b>{{
+                  item.cycleTime ||
+                  (isEn
+                    ? "Customized per cooling design"
+                    : "Disesuaikan desain pendingin")
+                }}</b>
               </div>
               <div class="spec-item">
-                <small>{{ isEn ? 'Required Machine Tonnage' : 'Kebutuhan Tonase Mesin' }}</small>
-                <b>{{ item.minMachineTonnage || (isEn ? 'Calculated upon consultation' : 'Dikalkulasi saat konsultasi') }}</b>
+                <small>{{
+                  isEn ? "Required Machine Tonnage" : "Kebutuhan Tonase Mesin"
+                }}</small>
+                <b>{{
+                  item.minMachineTonnage ||
+                  (isEn
+                    ? "Calculated upon consultation"
+                    : "Dikalkulasi saat konsultasi")
+                }}</b>
               </div>
             </div>
           </div>
 
           <!-- CATEGORY EXTRA INFO -->
-          <div v-if="mode === 'product' && categoryObj && categoryObj.detailContent && categoryObj.detailContent !== item.detailContent" class="cat-context-box">
-            <small>{{ isEn ? `CATEGORY DETAILS: ${categoryObj.name.toUpperCase()}` : `DETAIL KATEGORI ${categoryObj.name.toUpperCase()}` }}</small>
+          <div
+            v-if="
+              mode === 'product' &&
+              categoryObj &&
+              categoryObj.detailContent &&
+              categoryObj.detailContent !== item.detailContent
+            "
+            class="cat-context-box"
+          >
+            <small>{{
+              isEn
+                ? `CATEGORY DETAILS: ${categoryObj.name.toUpperCase()}`
+                : `DETAIL KATEGORI ${categoryObj.name.toUpperCase()}`
+            }}</small>
             <p>{{ categoryObj.detailContent }}</p>
           </div>
 
           <!-- ACTIONS -->
           <div class="quote-action-bar">
             <div class="modal-actions">
-              <button class="btn btn-primary" @click="emit('request-quote', item)">
-                {{ isEn ? 'Order / Request Quote for this Mold' : 'Pesan / Minta Penawaran Mold Ini' }} <ArrowUpRight :size="16" />
+              <button
+                class="btn btn-primary"
+                @click="emit('request-quote', item)"
+              >
+                {{
+                  isEn
+                    ? "Order / Request Quote for this Mold"
+                    : "Pesan / Minta Penawaran Mold Ini"
+                }}
+                <ArrowUpRight :size="16" />
               </button>
               <a :href="waLink" target="_blank" class="btn btn-wa">
-                <MessageCircle :size="16" /> {{ isEn ? 'WhatsApp Consultation' : 'Konsultasi WhatsApp' }}
+                <MessageCircle :size="16" />
+                {{ isEn ? "WhatsApp Consultation" : "Konsultasi WhatsApp" }}
               </a>
             </div>
           </div>
 
           <div class="modal-notice">
             <ShieldCheck :size="16" />
-            <small>{{ isEn ? 'We provide new and custom injection mold fabrication to produce parts like above tailored to your plant machines.' : 'Kami melayani pembuatan molding baru maupun custom untuk menghasilkan produk seperti di atas sesuai ukuran dan kapasitas mesin pabrik Anda.' }}</small>
+            <small>{{
+              isEn
+                ? "We provide new and custom injection mold fabrication to produce parts like above tailored to your plant machines."
+                : "Kami melayani pembuatan molding baru maupun custom untuk menghasilkan produk seperti di atas sesuai ukuran dan kapasitas mesin pabrik Anda."
+            }}</small>
           </div>
         </div>
       </div>
@@ -181,7 +280,7 @@ const waLink = computed(() => {
   max-height: 92vh;
   overflow-y: auto;
   border-radius: 4px;
-  box-shadow: 0 30px 70px rgba(0,0,0,0.35);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
   position: relative;
 }
 .modal-close-icon {
@@ -197,7 +296,7 @@ const waLink = computed(() => {
   border-radius: 50%;
   cursor: pointer;
   z-index: 10;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
   color: #14283b;
 }
 .prod-modal-grid {
@@ -305,7 +404,7 @@ const waLink = computed(() => {
   text-transform: uppercase;
 }
 .detail-header h2 {
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
   font-size: 23px;
   margin: 6px 0 10px;
   color: #0b1f33;
@@ -344,7 +443,7 @@ const waLink = computed(() => {
   margin-bottom: 16px;
 }
 .specs-table-box h4 {
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
   font-size: 13px;
   margin: 0 0 12px;
   color: #0b1f33;
@@ -427,14 +526,34 @@ const waLink = computed(() => {
 }
 
 @media (max-width: 820px) {
-  .prod-modal-grid { grid-template-columns: 1fr; }
-  .modal-main-img { height: 260px; min-height: 260px; position: relative; }
-  .single-image-mode .modal-main-img { min-height: 260px; }
-  .modal-details { padding: 22px 18px; }
+  .prod-modal-grid {
+    grid-template-columns: 1fr;
+  }
+  .modal-main-img {
+    height: 260px;
+    min-height: 260px;
+    position: relative;
+  }
+  .single-image-mode .modal-main-img {
+    min-height: 260px;
+  }
+  .modal-details {
+    padding: 22px 18px;
+  }
 }
 @media (max-width: 520px) {
-  .specs-grid { grid-template-columns: 1fr; gap: 10px; }
-  .modal-actions { flex-direction: column; width: 100%; }
-  .modal-actions .btn, .modal-actions .btn-wa { width: 100%; justify-content: center; }
+  .specs-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .modal-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .modal-actions .btn,
+  .modal-actions .btn-wa {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>

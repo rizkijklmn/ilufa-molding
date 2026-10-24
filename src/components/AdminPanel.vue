@@ -1707,7 +1707,10 @@ onMounted(() => {
             </button>
             <button
               :class="{ active: cmsSubTab === 'theme' }"
-              @click="cmsSubTab = 'theme'; ensureThemeColors()"
+              @click="
+                cmsSubTab = 'theme';
+                ensureThemeColors();
+              "
             >
               7. Logo & Warna Tema
             </button>
@@ -1740,18 +1743,18 @@ onMounted(() => {
                   <span>Nomor WhatsApp (Aktif) *</span>
                   <input
                     v-model="cms.general.whatsappNumber"
-                    placeholder="Contoh: 628132207311 (awali kode negara 62)"
+                    placeholder="Contoh: 6289676181754 (awali kode negara 62)"
                   />
                   <small
                     >Gunakan format tanpa tanda plus atau spasi, contoh:
-                    628132207311</small
+                    6289676181754</small
                   >
                 </label>
                 <label class="field-label">
                   <span>Nomor Telepon Kantor</span>
                   <input
                     v-model="cms.general.phone"
-                    placeholder="+62 813-2207-311"
+                    placeholder="+6289676181754"
                   />
                 </label>
                 <label class="field-label">
@@ -2009,7 +2012,8 @@ onMounted(() => {
                     placeholder="iLUFA Molding — Jual Molding Injeksi Plastik Bekas, Jasa Pemesanan Molding Import & Pembuatan Molding Plastik Custom"
                   />
                   <small>
-                    Disarankan memuat kata kunci utama dan nama brand (60–110 karakter).
+                    Disarankan memuat kata kunci utama dan nama brand (60–110
+                    karakter).
                   </small>
                 </label>
 
@@ -2021,7 +2025,8 @@ onMounted(() => {
                     placeholder="iLUFA Molding melayani jasa pemesanan molding import baru, pembuatan molding plastik custom, serta jual molding injeksi plastik bekas..."
                   ></textarea>
                   <small>
-                    Teks ringkasan yang muncul di bawah judul pada hasil pencarian Google (140–220 karakter).
+                    Teks ringkasan yang muncul di bawah judul pada hasil
+                    pencarian Google (140–220 karakter).
                   </small>
                 </label>
 
@@ -2032,7 +2037,9 @@ onMounted(() => {
                     rows="2"
                     placeholder="jual molding injeksi plastik bekas, jasa pemesanan molding import, pembuatan molding plastik custom..."
                   ></textarea>
-                  <small>Pisahkan setiap kata kunci dengan tanda koma (,).</small>
+                  <small
+                    >Pisahkan setiap kata kunci dengan tanda koma (,).</small
+                  >
                 </label>
 
                 <label class="field-label col-span-2">
@@ -2049,16 +2056,33 @@ onMounted(() => {
             <div v-if="cmsSubTab === 'theme'" class="form-section">
               <h3 class="form-title">Logo & Konsep Warna Website</h3>
               <p class="form-help">
-                Sesuaikan logo resmi perusahaan serta palet warna website (Warna Utama, Latar Sekunder, dan Aksen Emas) agar selaras dengan identitas brand Anda.
+                Sesuaikan logo resmi perusahaan serta palet warna website (Warna
+                Utama, Latar Sekunder, dan Aksen Emas) agar selaras dengan
+                identitas brand Anda.
               </p>
 
               <!-- BAGIAN 1: LOGO WEBSITE -->
               <div class="theme-card-block">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; flex-wrap: wrap; gap: 8px">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: 10px;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                  "
+                >
                   <div>
-                    <h4 style="margin: 0 0 4px; font-size: 15px; color: #0b1f33">1. Logo Perusahaan / Brand</h4>
+                    <h4
+                      style="margin: 0 0 4px; font-size: 15px; color: #0b1f33"
+                    >
+                      1. Logo Perusahaan / Brand
+                    </h4>
                     <p style="font-size: 12px; color: #64748b; margin: 0">
-                      Unggah logo resmi Anda (format PNG transparan, WEBP, atau JPG). Jika dikosongkan, website otomatis menampilkan lambang inisial kotak default.
+                      Unggah logo resmi Anda (format PNG transparan, WEBP, atau
+                      JPG). Jika dikosongkan, website otomatis menampilkan
+                      lambang inisial kotak default.
                     </p>
                   </div>
                   <button
@@ -2089,15 +2113,31 @@ onMounted(() => {
                 <!-- Preview Logo -->
                 <div v-if="cms.general.logoUrl" class="logo-preview-grid">
                   <div class="logo-preview-box light">
-                    <span class="preview-label">Pratinjau di Header (Latar Putih)</span>
+                    <span class="preview-label"
+                      >Pratinjau di Header (Latar Putih)</span
+                    >
                     <div class="preview-img-wrap">
-                      <img :src="cms.general.logoUrl" alt="Logo Header Preview" />
+                      <img
+                        :src="cms.general.logoUrl"
+                        alt="Logo Header Preview"
+                      />
                     </div>
                   </div>
-                  <div class="logo-preview-box dark" :style="{ background: cms.general?.themeColors?.primaryNavy || '#0b1f33' }">
-                    <span class="preview-label" style="color: #94a3b8">Pratinjau di Footer (Latar Gelap)</span>
+                  <div
+                    class="logo-preview-box dark"
+                    :style="{
+                      background:
+                        cms.general?.themeColors?.primaryNavy || '#0b1f33',
+                    }"
+                  >
+                    <span class="preview-label" style="color: #94a3b8"
+                      >Pratinjau di Footer (Latar Gelap)</span
+                    >
                     <div class="preview-img-wrap">
-                      <img :src="cms.general.logoUrl" alt="Logo Footer Preview" />
+                      <img
+                        :src="cms.general.logoUrl"
+                        alt="Logo Footer Preview"
+                      />
                     </div>
                   </div>
                 </div>
@@ -2105,11 +2145,25 @@ onMounted(() => {
 
               <!-- BAGIAN 2: PALET WARNA WEBSITE -->
               <div class="theme-card-block" style="margin-top: 24px">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 12px;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                  "
+                >
                   <div>
-                    <h4 style="margin: 0 0 4px; font-size: 15px; color: #0b1f33">2. Konsep Warna Tema Website</h4>
+                    <h4
+                      style="margin: 0 0 4px; font-size: 15px; color: #0b1f33"
+                    >
+                      2. Konsep Warna Tema Website
+                    </h4>
                     <p style="font-size: 12px; color: #64748b; margin: 0">
-                      Ubah warna tema utama, sekunder, dan aksen emas. Warna langsung diterapkan ke seluruh halaman website.
+                      Ubah warna tema utama, sekunder, dan aksen emas. Warna
+                      langsung diterapkan ke seluruh halaman website.
                     </p>
                   </div>
                   <button
@@ -2124,10 +2178,18 @@ onMounted(() => {
                 <div class="theme-colors-grid">
                   <!-- Warna 1: Primary Navy -->
                   <div class="color-picker-card">
-                    <div class="color-swatch-circle" :style="{ background: cms.general?.themeColors?.primaryNavy || '#0b1f33' }"></div>
+                    <div
+                      class="color-swatch-circle"
+                      :style="{
+                        background:
+                          cms.general?.themeColors?.primaryNavy || '#0b1f33',
+                      }"
+                    ></div>
                     <div class="color-details">
                       <span class="color-label">Warna Utama (Primary)</span>
-                      <small class="color-desc">Header brand, Hero banner, Tombol utama</small>
+                      <small class="color-desc"
+                        >Header brand, Hero banner, Tombol utama</small
+                      >
                       <div class="color-input-group">
                         <input
                           type="color"
@@ -2147,10 +2209,18 @@ onMounted(() => {
 
                   <!-- Warna 2: Secondary Navy -->
                   <div class="color-picker-card">
-                    <div class="color-swatch-circle" :style="{ background: cms.general?.themeColors?.secondaryNavy || '#122e47' }"></div>
+                    <div
+                      class="color-swatch-circle"
+                      :style="{
+                        background:
+                          cms.general?.themeColors?.secondaryNavy || '#122e47',
+                      }"
+                    ></div>
                     <div class="color-details">
                       <span class="color-label">Warna Latar (Secondary)</span>
-                      <small class="color-desc">Topbar pengumuman, Card navy, Footer</small>
+                      <small class="color-desc"
+                        >Topbar pengumuman, Card navy, Footer</small
+                      >
                       <div class="color-input-group">
                         <input
                           type="color"
@@ -2170,10 +2240,18 @@ onMounted(() => {
 
                   <!-- Warna 3: Accent Gold -->
                   <div class="color-picker-card">
-                    <div class="color-swatch-circle" :style="{ background: cms.general?.themeColors?.accentGold || '#d9aa52' }"></div>
+                    <div
+                      class="color-swatch-circle"
+                      :style="{
+                        background:
+                          cms.general?.themeColors?.accentGold || '#d9aa52',
+                      }"
+                    ></div>
                     <div class="color-details">
                       <span class="color-label">Warna Aksen (Accent)</span>
-                      <small class="color-desc">Tombol CTA emas, Garis eyebrow, Badge highlight</small>
+                      <small class="color-desc"
+                        >Tombol CTA emas, Garis eyebrow, Badge highlight</small
+                      >
                       <div class="color-input-group">
                         <input
                           type="color"
@@ -2203,8 +2281,14 @@ onMounted(() => {
                       class="btn-palette-chip"
                       @click="applyColorPreset('#0b1f33', '#122e47', '#d9aa52')"
                     >
-                      <span class="dot-swatch" style="background: #0b1f33"></span>
-                      <span class="dot-swatch" style="background: #d9aa52"></span>
+                      <span
+                        class="dot-swatch"
+                        style="background: #0b1f33"
+                      ></span>
+                      <span
+                        class="dot-swatch"
+                        style="background: #d9aa52"
+                      ></span>
                       iLUFA Classic (Navy & Emas)
                     </button>
                     <button
@@ -2212,8 +2296,14 @@ onMounted(() => {
                       class="btn-palette-chip"
                       @click="applyColorPreset('#0f172a', '#1e293b', '#2563eb')"
                     >
-                      <span class="dot-swatch" style="background: #0f172a"></span>
-                      <span class="dot-swatch" style="background: #2563eb"></span>
+                      <span
+                        class="dot-swatch"
+                        style="background: #0f172a"
+                      ></span>
+                      <span
+                        class="dot-swatch"
+                        style="background: #2563eb"
+                      ></span>
                       Steel Industrial (Slate & Blue)
                     </button>
                     <button
@@ -2221,8 +2311,14 @@ onMounted(() => {
                       class="btn-palette-chip"
                       @click="applyColorPreset('#064e3b', '#065f46', '#10b981')"
                     >
-                      <span class="dot-swatch" style="background: #064e3b"></span>
-                      <span class="dot-swatch" style="background: #10b981"></span>
+                      <span
+                        class="dot-swatch"
+                        style="background: #064e3b"
+                      ></span>
+                      <span
+                        class="dot-swatch"
+                        style="background: #10b981"
+                      ></span>
                       Emerald Eco (Dark Green & Emerald)
                     </button>
                     <button
@@ -2230,8 +2326,14 @@ onMounted(() => {
                       class="btn-palette-chip"
                       @click="applyColorPreset('#18181b', '#27272a', '#e11d48')"
                     >
-                      <span class="dot-swatch" style="background: #18181b"></span>
-                      <span class="dot-swatch" style="background: #e11d48"></span>
+                      <span
+                        class="dot-swatch"
+                        style="background: #18181b"
+                      ></span>
+                      <span
+                        class="dot-swatch"
+                        style="background: #e11d48"
+                      ></span>
                       Titanium High-Tech (Zinc & Red)
                     </button>
                   </div>
@@ -4333,7 +4435,7 @@ onMounted(() => {
   border-radius: 50%;
   border: 2px solid #cbd5e1;
   flex-shrink: 0;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .color-details {
@@ -4428,7 +4530,7 @@ onMounted(() => {
   height: 12px;
   border-radius: 50%;
   display: inline-block;
-  border: 1px solid rgba(0,0,0,0.15);
+  border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 .cms-save-bar {

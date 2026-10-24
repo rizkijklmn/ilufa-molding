@@ -25,7 +25,7 @@ import LanguageSelector from "./components/LanguageSelector.vue";
 import { LOCALES } from "./locales.js";
 
 const API = import.meta.env.VITE_API_URL || "/api";
-const WA_DEFAULT = import.meta.env.VITE_WHATSAPP_NUMBER || "628132207311";
+const WA_DEFAULT = import.meta.env.VITE_WHATSAPP_NUMBER || "6289676181754";
 
 // --- Multi-Language & Automatic Translation Engine ---
 const currentLang = ref(localStorage.getItem("ilufa_lang") || "id");
@@ -110,7 +110,7 @@ const cms = ref({
     whatsappMessage:
       "Halo iLUFA Molding, saya ingin konsultasi kebutuhan molding injeksi plastik.",
     email: "info@ilufamolding.com",
-    phone: "+62 813-2207-311",
+    phone: "+6289676181754",
     address: "Kawasan Industri Cikarang, Bekasi, Jawa Barat 17530",
     operationalHours: "Senin - Sabtu: 08.00 - 17.00 WIB",
   },
@@ -243,18 +243,18 @@ function applyThemeColors() {
   if (!colors) return;
   const root = document.documentElement;
   if (colors.primaryNavy) root.style.setProperty("--navy", colors.primaryNavy);
-  if (colors.secondaryNavy) root.style.setProperty("--navy2", colors.secondaryNavy);
+  if (colors.secondaryNavy)
+    root.style.setProperty("--navy2", colors.secondaryNavy);
   if (colors.accentGold) {
     root.style.setProperty("--gold", colors.accentGold);
     root.style.setProperty("--gold-light", colors.accentGold + "20");
   }
 }
 
-watch(
-  () => cms.value?.general?.themeColors,
-  applyThemeColors,
-  { deep: true, immediate: true }
-);
+watch(() => cms.value?.general?.themeColors, applyThemeColors, {
+  deep: true,
+  immediate: true,
+});
 
 // Modals State
 const selectedMold = ref(null);
@@ -355,11 +355,14 @@ const filteredMolds = computed(() =>
     const matchesType =
       filterType.value === "ALL" || m.type === filterType.value;
     const matchesCategory =
-      moldCategoryFilter.value === "ALL" || m.category === moldCategoryFilter.value;
+      moldCategoryFilter.value === "ALL" ||
+      m.category === moldCategoryFilter.value;
     const search = query.value.toLowerCase().trim();
     const matchesQuery =
       !search ||
-      `${m.name} ${m.code} ${m.category} ${m.material || ""}`.toLowerCase().includes(search);
+      `${m.name} ${m.code} ${m.category} ${m.material || ""}`
+        .toLowerCase()
+        .includes(search);
     return matchesType && matchesCategory && matchesQuery;
   }),
 );
@@ -593,37 +596,39 @@ function updateSeoHeadAndSchema() {
     },
   }));
 
-  const moldCatalogEntities = filteredMolds.value.slice(0, 12).map((m, idx) => ({
-    "@type": "ListItem",
-    position: idx + 1,
-    item: {
-      "@type": "Product",
-      name: m.name,
-      sku: m.code,
-      category: m.category,
-      description:
-        m.description ||
-        `${m.name} - ${typeLabel(m.type)} (${m.category}) di iLUFA Molding`,
-      image: m.imageUrl,
-      brand: {
-        "@type": "Brand",
-        name: gen.siteName || "iLUFA Molding",
-      },
-      offers: {
-        "@type": "Offer",
-        priceCurrency: "IDR",
-        price: "0",
-        availability:
-          m.status === "SOLD"
-            ? "https://schema.org/OutOfStock"
-            : "https://schema.org/InStock",
-        seller: {
-          "@type": "Organization",
+  const moldCatalogEntities = filteredMolds.value
+    .slice(0, 12)
+    .map((m, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      item: {
+        "@type": "Product",
+        name: m.name,
+        sku: m.code,
+        category: m.category,
+        description:
+          m.description ||
+          `${m.name} - ${typeLabel(m.type)} (${m.category}) di iLUFA Molding`,
+        image: m.imageUrl,
+        brand: {
+          "@type": "Brand",
           name: gen.siteName || "iLUFA Molding",
         },
+        offers: {
+          "@type": "Offer",
+          priceCurrency: "IDR",
+          price: "0",
+          availability:
+            m.status === "SOLD"
+              ? "https://schema.org/OutOfStock"
+              : "https://schema.org/InStock",
+          seller: {
+            "@type": "Organization",
+            name: gen.siteName || "iLUFA Molding",
+          },
+        },
       },
-    },
-  }));
+    }));
 
   const jsonLdGraph = [
     {
@@ -632,7 +637,7 @@ function updateSeoHeadAndSchema() {
       name: gen.siteName || "iLUFA Molding",
       description: desc,
       url: canonicalUrl,
-      telephone: gen.phone || "+62-813-2207-311",
+      telephone: gen.phone || "+6289676181754",
       email: gen.email || "info@ilufamolding.com",
       address: {
         "@type": "PostalAddress",
@@ -725,7 +730,8 @@ onUnmounted(() => {
           <div class="topbar-right">
             <LanguageSelector />
             <button class="admin-link-btn" @click="setViewMode('admin')">
-              <Lock :size="12" /> <span>{{ t('adminBtn', 'Admin & CMS') }}</span>
+              <Lock :size="12" />
+              <span>{{ t("adminBtn", "Admin & CMS") }}</span>
             </button>
           </div>
         </div>
@@ -743,7 +749,9 @@ onUnmounted(() => {
             />
             <span v-else class="brand-mark">i</span>
             <div class="brand-info">
-              <span class="brand-name notranslate" translate="no">{{ cms.general.siteName || "iLUFA MOLDING" }}</span>
+              <span class="brand-name notranslate" translate="no">{{
+                cms.general.siteName || "iLUFA MOLDING"
+              }}</span>
               <small class="brand-tagline">{{
                 cms.general.siteTagline || "INDUSTRIAL MOLD PROCUREMENT"
               }}</small>
@@ -760,16 +768,26 @@ onUnmounted(() => {
           </button>
 
           <nav :class="{ 'nav-open': menuOpen }">
-            <a href="#layanan" @click="menuOpen = false">{{ t('navServices', 'Layanan') }}</a>
-            <a href="#katalog" @click="menuOpen = false">{{ t('navCatalog', 'Katalog Molding') }}</a>
-            <a href="#hasil-cetakan" @click="menuOpen = false"
-              >{{ t('navProducts', 'Contoh Hasil Cetak') }}</a
-            >
-            <a href="#proses" @click="menuOpen = false">{{ t('navProcess', 'Cara Pemesanan') }}</a>
-            <a href="#faq" @click="menuOpen = false">{{ t('navFaq', 'FAQ') }}</a>
-            <a href="#tentang" @click="menuOpen = false">{{ t('navAbout', 'Tentang Kami') }}</a>
+            <a href="#layanan" @click="menuOpen = false">{{
+              t("navServices", "Layanan")
+            }}</a>
+            <a href="#katalog" @click="menuOpen = false">{{
+              t("navCatalog", "Katalog Molding")
+            }}</a>
+            <a href="#hasil-cetakan" @click="menuOpen = false">{{
+              t("navProducts", "Contoh Hasil Cetak")
+            }}</a>
+            <a href="#proses" @click="menuOpen = false">{{
+              t("navProcess", "Cara Pemesanan")
+            }}</a>
+            <a href="#faq" @click="menuOpen = false">{{
+              t("navFaq", "FAQ")
+            }}</a>
+            <a href="#tentang" @click="menuOpen = false">{{
+              t("navAbout", "Tentang Kami")
+            }}</a>
             <button class="btn btn-primary nav-cta" @click="jumpTo('rfq')">
-              {{ t('navRfq', 'Minta Penawaran') }} <ArrowUpRight :size="16" />
+              {{ t("navRfq", "Minta Penawaran") }} <ArrowUpRight :size="16" />
             </button>
           </nav>
         </div>
@@ -842,29 +860,37 @@ onUnmounted(() => {
             <div>
               <Factory />
               <span
-                ><b>{{ t('trust1Title', 'Solusi Industri') }}</b
-                ><small>{{ t('trust1Desc', 'Fokus pada kebutuhan produksi') }}</small></span
+                ><b>{{ t("trust1Title", "Solusi Industri") }}</b
+                ><small>{{
+                  t("trust1Desc", "Fokus pada kebutuhan produksi")
+                }}</small></span
               >
             </div>
             <div>
               <Boxes />
               <span
-                ><b>{{ t('trust2Title', '3 Pilihan Layanan') }}</b
-                ><small>{{ t('trust2Desc', 'Baru, custom, dan second') }}</small></span
+                ><b>{{ t("trust2Title", "3 Pilihan Layanan") }}</b
+                ><small>{{
+                  t("trust2Desc", "Baru, custom, dan second")
+                }}</small></span
               >
             </div>
             <div>
               <ClipboardCheck />
               <span
-                ><b>{{ t('trust3Title', 'Proses Terarah') }}</b
-                ><small>{{ t('trust3Desc', 'Spesifikasi hingga pengiriman') }}</small></span
+                ><b>{{ t("trust3Title", "Proses Terarah") }}</b
+                ><small>{{
+                  t("trust3Desc", "Spesifikasi hingga pengiriman")
+                }}</small></span
               >
             </div>
             <div>
               <ShieldCheck />
               <span
-                ><b>{{ t('trust4Title', 'Pengiriman Seluruh Indonesia') }}</b
-                ><small>{{ t('trust4Desc', 'Dukungan logistik ke pabrik') }}</small></span
+                ><b>{{ t("trust4Title", "Pengiriman Seluruh Indonesia") }}</b
+                ><small>{{
+                  t("trust4Desc", "Dukungan logistik ke pabrik")
+                }}</small></span
               >
             </div>
           </div>
@@ -876,7 +902,8 @@ onUnmounted(() => {
             <div class="section-heading">
               <div>
                 <div class="eyebrow dark">
-                  <span class="eyebrow-line"></span> {{ t('servicesEyebrow', 'LAYANAN KAMI') }}
+                  <span class="eyebrow-line"></span>
+                  {{ t("servicesEyebrow", "LAYANAN KAMI") }}
                 </div>
                 <h2>
                   Satu partner untuk<br /><span>berbagai kebutuhan mold.</span>
@@ -925,16 +952,28 @@ onUnmounted(() => {
             <div class="section-heading catalog-heading">
               <div>
                 <div class="eyebrow dark">
-                  <span class="eyebrow-line"></span> {{ t('catalogEyebrow', 'KATALOG MOLDING') }}
+                  <span class="eyebrow-line"></span>
+                  {{ t("catalogEyebrow", "KATALOG MOLDING") }}
                 </div>
                 <h2>
-                  {{ currentLang === 'en' ? 'Find the right mold option' : 'Temukan opsi yang' }}<br /><span
-                    >{{ currentLang === 'en' ? 'for your manufacturing needs.' : 'sesuai kebutuhan Anda.' }}</span
-                  >
+                  {{
+                    currentLang === "en"
+                      ? "Find the right mold option"
+                      : "Temukan opsi yang"
+                  }}<br /><span>{{
+                    currentLang === "en"
+                      ? "for your manufacturing needs."
+                      : "sesuai kebutuhan Anda."
+                  }}</span>
                 </h2>
               </div>
               <p>
-                {{ t('catalogDesc', 'Klik salah satu molding untuk melihat detail spesifikasi lengkap (cavity, berat, dimensi base, tonase mesin) dan meminta penawaran.') }}
+                {{
+                  t(
+                    "catalogDesc",
+                    "Klik salah satu molding untuk melihat detail spesifikasi lengkap (cavity, berat, dimensi base, tonase mesin) dan meminta penawaran.",
+                  )
+                }}
               </p>
             </div>
 
@@ -943,7 +982,9 @@ onUnmounted(() => {
                 <Search :size="18" />
                 <input
                   v-model="query"
-                  :placeholder="t('searchPlaceholder', 'Cari nama, kode, kategori...')"
+                  :placeholder="
+                    t('searchPlaceholder', 'Cari nama, kode, kategori...')
+                  "
                   :aria-label="t('searchPlaceholder', 'Cari katalog')"
                 />
               </div>
@@ -972,7 +1013,7 @@ onUnmounted(() => {
                 :class="{ active: moldCategoryFilter === 'ALL' }"
                 @click="moldCategoryFilter = 'ALL'"
               >
-                {{ t('categoryFilterAll', 'Semua Kategori') }}
+                {{ t("categoryFilterAll", "Semua Kategori") }}
               </button>
               <button
                 v-for="cat in visibleCategories"
@@ -987,7 +1028,7 @@ onUnmounted(() => {
             </div>
 
             <div v-if="loadingMolds" class="empty-state">
-              {{ t('loadingMolds', 'Memuat katalog molding...') }}
+              {{ t("loadingMolds", "Memuat katalog molding...") }}
             </div>
             <div v-else-if="loadError" class="empty-state error-state">
               {{ loadError }}
@@ -1023,12 +1064,16 @@ onUnmounted(() => {
                     "
                     class="gallery-pill"
                   >
-                    +{{ mold.galleryImages.filter(Boolean).length }} {{ t('photoDetailSuffix', 'Foto Detail') }}
+                    +{{ mold.galleryImages.filter(Boolean).length }}
+                    {{ t("photoDetailSuffix", "Foto Detail") }}
                   </span>
                 </div>
                 <div class="mold-body">
                   <div class="mold-code">
-                    <span class="notranslate" translate="no">{{ mold.code }}</span> <span>{{ mold.category }}</span>
+                    <span class="notranslate" translate="no">{{
+                      mold.code
+                    }}</span>
+                    <span>{{ mold.category }}</span>
                   </div>
                   <h3>{{ mold.name }}</h3>
                   <p>{{ mold.description }}</p>
@@ -1036,7 +1081,10 @@ onUnmounted(() => {
                     <span v-if="mold.cavity" class="notranslate" translate="no"
                       ><b>{{ mold.cavity }}</b> cavity</span
                     >
-                    <span v-if="mold.dimensions" class="notranslate" translate="no"
+                    <span
+                      v-if="mold.dimensions"
+                      class="notranslate"
+                      translate="no"
                       ><b>{{ mold.dimensions }}</b></span
                     >
                     <span v-if="mold.condition"
@@ -1045,8 +1093,10 @@ onUnmounted(() => {
                   </div>
                   <div class="mold-footer">
                     <div>
-                      <small>{{ t('priceStatus', 'STATUS HARGA') }}</small>
-                      <b>{{ mold.priceLabel || t('askQuotation', 'Minta penawaran') }}</b>
+                      <small>{{ t("priceStatus", "STATUS HARGA") }}</small>
+                      <b>{{
+                        mold.priceLabel || t("askQuotation", "Minta penawaran")
+                      }}</b>
                     </div>
                     <button
                       class="icon-btn"
@@ -1059,17 +1109,34 @@ onUnmounted(() => {
               </article>
             </div>
             <div v-else class="empty-state">
-              {{ t('noMoldsFound', 'Belum ada item molding yang ditampilkan untuk filter ini.') }}
+              {{
+                t(
+                  "noMoldsFound",
+                  "Belum ada item molding yang ditampilkan untuk filter ini.",
+                )
+              }}
             </div>
 
             <!-- Pagination Bar for Catalog -->
-            <div v-if="filteredMolds.length > catalogPageSize" class="catalog-pagination">
+            <div
+              v-if="filteredMolds.length > catalogPageSize"
+              class="catalog-pagination"
+            >
               <div class="pagination-info">
                 {{
-                  t('paginationInfo', 'Menampilkan {from} - {to} dari {total} unit molding')
-                    .replace('{from}', (catalogPage - 1) * catalogPageSize + 1)
-                    .replace('{to}', Math.min(catalogPage * catalogPageSize, filteredMolds.length))
-                    .replace('{total}', filteredMolds.length)
+                  t(
+                    "paginationInfo",
+                    "Menampilkan {from} - {to} dari {total} unit molding",
+                  )
+                    .replace("{from}", (catalogPage - 1) * catalogPageSize + 1)
+                    .replace(
+                      "{to}",
+                      Math.min(
+                        catalogPage * catalogPageSize,
+                        filteredMolds.length,
+                      ),
+                    )
+                    .replace("{total}", filteredMolds.length)
                 }}
               </div>
               <div class="pagination-controls">
@@ -1080,7 +1147,7 @@ onUnmounted(() => {
                   @click="catalogPage--"
                   :aria-label="t('prevPage', 'Sebelumnya')"
                 >
-                  ‹ {{ t('prevPage', 'Sebelumnya') }}
+                  ‹ {{ t("prevPage", "Sebelumnya") }}
                 </button>
                 <button
                   v-for="p in totalCatalogPages"
@@ -1099,7 +1166,7 @@ onUnmounted(() => {
                   @click="catalogPage++"
                   :aria-label="t('nextPage', 'Selanjutnya')"
                 >
-                  {{ t('nextPage', 'Selanjutnya') }} ›
+                  {{ t("nextPage", "Selanjutnya") }} ›
                 </button>
               </div>
             </div>
@@ -1488,7 +1555,12 @@ onUnmounted(() => {
             />
             <span v-else class="brand-mark">i</span>
             <div class="brand-info">
-              <span class="brand-name notranslate" translate="no" style="color: #ffffff">{{ cms.general.siteName || "iLUFA MOLDING" }}</span>
+              <span
+                class="brand-name notranslate"
+                translate="no"
+                style="color: #ffffff"
+                >{{ cms.general.siteName || "iLUFA MOLDING" }}</span
+              >
               <small class="brand-tagline">{{
                 cms.general.siteTagline || "INDUSTRIAL MOLD PROCUREMENT"
               }}</small>
@@ -1496,22 +1568,37 @@ onUnmounted(() => {
           </div>
           <div class="footer-contact-info">
             <p class="contact-item">{{ cms.general.address }}</p>
-            <p class="contact-item">Email: <span class="notranslate" translate="no">{{ cms.general.email }}</span></p>
-            <p class="contact-item">Telp: <span class="notranslate" translate="no">{{ cms.general.phone }}</span></p>
-            <p v-if="cms.general.operationalHours" class="contact-item">Jam Operasional: {{ cms.general.operationalHours }}</p>
+            <p class="contact-item">
+              Email:
+              <span class="notranslate" translate="no">{{
+                cms.general.email
+              }}</span>
+            </p>
+            <p class="contact-item">
+              Telp:
+              <span class="notranslate" translate="no">{{
+                cms.general.phone
+              }}</span>
+            </p>
+            <p v-if="cms.general.operationalHours" class="contact-item">
+              Jam Operasional: {{ cms.general.operationalHours }}
+            </p>
           </div>
           <div class="footer-links">
-            <a href="#layanan">{{ t('navServices', 'Layanan') }}</a>
-            <a href="#katalog">{{ t('navCatalog', 'Katalog Molding') }}</a>
-            <a href="#hasil-cetakan">{{ t('navProducts', 'Contoh Hasil Cetak') }}</a>
-            <a href="#proses">{{ t('navProcess', 'Cara Pemesanan') }}</a>
-            <a href="#faq">{{ t('navFaq', 'FAQ') }}</a>
-            <a href="#rfq">{{ t('navRfq', 'Minta Penawaran') }}</a>
+            <a href="#layanan">{{ t("navServices", "Layanan") }}</a>
+            <a href="#katalog">{{ t("navCatalog", "Katalog Molding") }}</a>
+            <a href="#hasil-cetakan">{{
+              t("navProducts", "Contoh Hasil Cetak")
+            }}</a>
+            <a href="#proses">{{ t("navProcess", "Cara Pemesanan") }}</a>
+            <a href="#faq">{{ t("navFaq", "FAQ") }}</a>
+            <a href="#rfq">{{ t("navRfq", "Minta Penawaran") }}</a>
           </div>
         </div>
         <div class="container footer-bottom">
           <span
-            >© {{ new Date().getFullYear() }} {{ cms.general.siteName }}. {{ t('footerCopyright', 'All rights reserved.') }}</span
+            >© {{ new Date().getFullYear() }} {{ cms.general.siteName }}.
+            {{ t("footerCopyright", "All rights reserved.") }}</span
           >
           <span
             >Jual Molding Injeksi Plastik Bekas · Jasa Pemesanan Molding Import
@@ -1533,8 +1620,12 @@ onUnmounted(() => {
           <span class="wa-pulse"></span>
         </div>
         <div class="wa-btn-content">
-          <span class="wa-btn-sub">{{ t('waFloatSub', 'Online & Fast Response') }}</span>
-          <span class="wa-btn-text">{{ t('waFloatCta', 'Konsultasi dengan Kami') }}</span>
+          <span class="wa-btn-sub">{{
+            t("waFloatSub", "Online & Fast Response")
+          }}</span>
+          <span class="wa-btn-text">{{
+            t("waFloatCta", "Konsultasi dengan Kami")
+          }}</span>
         </div>
       </a>
 

@@ -743,7 +743,7 @@ onUnmounted(() => {
             />
             <span v-else class="brand-mark">i</span>
             <div class="brand-info">
-              <span class="brand-name">{{ cms.general.siteName || "iLUFA MOLDING" }}</span>
+              <span class="brand-name notranslate" translate="no">{{ cms.general.siteName || "iLUFA MOLDING" }}</span>
               <small class="brand-tagline">{{
                 cms.general.siteTagline || "INDUSTRIAL MOLD PROCUREMENT"
               }}</small>
@@ -1028,15 +1028,15 @@ onUnmounted(() => {
                 </div>
                 <div class="mold-body">
                   <div class="mold-code">
-                    {{ mold.code }} <span>{{ mold.category }}</span>
+                    <span class="notranslate" translate="no">{{ mold.code }}</span> <span>{{ mold.category }}</span>
                   </div>
                   <h3>{{ mold.name }}</h3>
                   <p>{{ mold.description }}</p>
                   <div class="spec-row">
-                    <span v-if="mold.cavity"
+                    <span v-if="mold.cavity" class="notranslate" translate="no"
                       ><b>{{ mold.cavity }}</b> cavity</span
                     >
-                    <span v-if="mold.dimensions"
+                    <span v-if="mold.dimensions" class="notranslate" translate="no"
                       ><b>{{ mold.dimensions }}</b></span
                     >
                     <span v-if="mold.condition"
@@ -1488,20 +1488,18 @@ onUnmounted(() => {
             />
             <span v-else class="brand-mark">i</span>
             <div class="brand-info">
-              <span class="brand-name" style="color: #ffffff">{{ cms.general.siteName || "iLUFA MOLDING" }}</span>
-              <small class="brand-tagline" style="color: #94a3b8">{{
+              <span class="brand-name notranslate" translate="no" style="color: #ffffff">{{ cms.general.siteName || "iLUFA MOLDING" }}</span>
+              <small class="brand-tagline">{{
                 cms.general.siteTagline || "INDUSTRIAL MOLD PROCUREMENT"
               }}</small>
             </div>
           </div>
-          <p>
-            {{ cms.general.address }}<br />
-            Email: {{ cms.general.email }}<br />
-            Telp: {{ cms.general.phone }}
-            <template v-if="cms.general.operationalHours">
-              <br />Jam Operasional: {{ cms.general.operationalHours }}
-            </template>
-          </p>
+          <div class="footer-contact-info">
+            <p class="contact-item">{{ cms.general.address }}</p>
+            <p class="contact-item">Email: <span class="notranslate" translate="no">{{ cms.general.email }}</span></p>
+            <p class="contact-item">Telp: <span class="notranslate" translate="no">{{ cms.general.phone }}</span></p>
+            <p v-if="cms.general.operationalHours" class="contact-item">Jam Operasional: {{ cms.general.operationalHours }}</p>
+          </div>
           <div class="footer-links">
             <a href="#layanan">{{ t('navServices', 'Layanan') }}</a>
             <a href="#katalog">{{ t('navCatalog', 'Katalog Molding') }}</a>

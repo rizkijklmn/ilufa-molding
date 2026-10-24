@@ -91,7 +91,7 @@ const waLink = computed(() => {
 
         <div class="modal-details">
           <div class="detail-header">
-            <span class="detail-code">{{ mold.code }} · {{ mold.category }}</span>
+            <span class="detail-code"><span class="notranslate" translate="no">{{ mold.code }}</span> · {{ mold.category }}</span>
             <h2>{{ mold.name }}</h2>
             <p class="detail-desc">{{ mold.description }}</p>
             <p v-if="mold.detailContent" class="detail-extra">{{ mold.detailContent }}</p>

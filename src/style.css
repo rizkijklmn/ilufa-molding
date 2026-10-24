@@ -1748,12 +1748,22 @@ font[style] {
   color: #91a0ac;
 }
 
-.footer-main > p {
-  font-size: 11px;
-  line-height: 1.8;
-  color: #9caab5;
-  max-width: 260px;
+.footer-contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 320px;
   margin: 0;
+}
+
+.contact-item {
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: #9caab5;
+  margin: 0;
+  display: block;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .footer-links {

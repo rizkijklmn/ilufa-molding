@@ -1811,6 +1811,27 @@ font[style] {
     width: min(100% - 40px, 980px);
   }
 
+  .brand {
+    max-width: calc(100% - 46px);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .brand-logo-img {
+    max-height: 38px;
+    max-width: 95px;
+  }
+
+  .brand-name {
+    font-size: 17px;
+  }
+
+  .brand small,
+  .brand-tagline {
+    font-size: 8.5px;
+    max-width: 280px;
+  }
+
   .mobile-toggle {
     display: block;
     cursor: pointer;
@@ -1916,11 +1937,18 @@ font[style] {
 /* Tablet Portrait & Large Phones (<= 768px) */
 @media (max-width: 768px) {
   .container {
-    width: calc(100% - 32px);
+    width: calc(100% - 28px);
   }
 
   .topbar-notice {
-    font-size: 11px;
+    display: none !important;
+  }
+
+  .topbar-inner {
+    justify-content: flex-end;
+    gap: 8px;
+    min-height: 36px;
+    padding: 4px 0;
   }
 
   .topbar-wa span {
@@ -1928,22 +1956,46 @@ font[style] {
   }
 
   .nav {
-    height: 70px;
+    height: 68px;
+    gap: 12px;
   }
 
   .nav nav {
-    top: 70px;
+    top: 68px;
     padding: 16px 20px 22px;
   }
 
   .brand {
-    font-size: 18px;
+    font-size: 17px;
+    max-width: calc(100% - 48px);
+    flex: 1;
+    min-width: 0;
+    gap: 10px;
+  }
+
+  .brand-logo-img {
+    max-height: 38px;
+    max-width: 88px;
+  }
+
+  .brand-name {
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .brand small,
+  .brand-tagline {
+    font-size: 8.5px;
+    max-width: 260px;
+    -webkit-line-clamp: 1;
   }
 
   .brand-mark {
-    width: 38px;
-    height: 38px;
-    font-size: 26px;
+    width: 36px;
+    height: 36px;
+    font-size: 24px;
   }
 
   .hero {
@@ -2099,8 +2151,76 @@ font[style] {
 /* Mobile Phones (<= 540px) */
 @media (max-width: 540px) {
   .topbar-notice {
-    font-size: 10px;
-    max-width: 175px;
+    display: none !important;
+  }
+
+  .topbar-inner {
+    justify-content: flex-end;
+    gap: 8px;
+    min-height: 34px;
+    padding: 3px 0;
+  }
+
+  .admin-link-btn {
+    padding: 3px 8px;
+    font-size: 10.5px;
+  }
+
+  .nav {
+    height: 64px;
+    gap: 10px;
+  }
+
+  .brand {
+    max-width: calc(100% - 44px);
+    flex: 1;
+    min-width: 0;
+    gap: 9px;
+  }
+
+  .brand-logo-img {
+    max-height: 34px;
+    max-width: 80px;
+  }
+
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    font-size: 22px;
+  }
+
+  .brand-name {
+    font-size: 15.5px;
+    line-height: 1.15;
+    letter-spacing: -0.3px;
+  }
+
+  .brand small,
+  .brand-tagline {
+    font-size: 8px;
+    max-width: 220px;
+    -webkit-line-clamp: 1;
+  }
+
+  .catalog-pagination {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 18px;
+  }
+
+  .pagination-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .page-btn {
+    min-width: 34px;
+    height: 34px;
+    font-size: 12px;
+    padding: 0 8px;
   }
 
   .hero-actions {

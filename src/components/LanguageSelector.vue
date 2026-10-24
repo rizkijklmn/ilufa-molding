@@ -82,7 +82,16 @@ function selectLanguage(lang) {
 }
 
 function handleOutsideClick(e) {
-  if (!e.target.closest('.lang-dropdown-wrapper')) {
+  if (
+    !e.target.closest('.lang-dropdown-wrapper') &&
+    !e.target.closest('.lang-modal-dialog')
+  ) {
+    isOpen.value = false
+  }
+}
+
+function handleKeyDown(e) {
+  if (e.key === 'Escape' && isOpen.value) {
     isOpen.value = false
   }
 }
@@ -90,10 +99,12 @@ function handleOutsideClick(e) {
 onMounted(() => {
   detectCurrentLang()
   document.addEventListener('click', handleOutsideClick)
+  document.addEventListener('keydown', handleKeyDown)
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleOutsideClick)
+  document.removeEventListener('keydown', handleKeyDown)
 })
 </script>
 
@@ -105,87 +116,107 @@ onUnmounted(() => {
       class="lang-trigger-btn"
       :class="{ active: isOpen }"
       @click="isOpen = !isOpen"
-      aria-haspopup="true"
+      aria-haspopup="dialog"
       :aria-expanded="isOpen"
     >
-      <Globe :size="14" class="globe-icon" />
+      <Globe :size="13" class="globe-icon" />
       <span class="lang-flag">{{ currentLanguage.flag }}</span>
-      <span class="lang-name">{{ currentLanguage.name }}</span>
-      <ChevronDown :size="13" class="chevron-icon" :class="{ rotate: isOpen }" />
+      <span class="lang-name lang-name-full">{{ currentLanguage.name }}</span>
+      <span class="lang-name lang-name-short">{{ currentLanguage.code === 'id' ? 'ID' : currentLanguage.code === 'en' ? 'EN' : currentLanguage.code.toUpperCase() }}</span>
+      <ChevronDown :size="12" class="chevron-icon" :class="{ rotate: isOpen }" />
     </button>
 
-    <!-- DROPDOWN POPOVER KE BAWAH DENGAN SEARCH & VERTICAL SCROLL -->
-    <div v-if="isOpen" class="lang-popover-card">
-      <div class="lang-popover-header">
-        <div class="lang-search-wrap">
-          <Search :size="15" class="search-icon" />
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Cari bahasa / Search language..."
-            class="lang-search-input"
-            autofocus
-          />
-          <button
-            v-if="searchQuery"
-            class="clear-search-btn"
-            @click="searchQuery = ''"
-          >
-            <X :size="13" />
-          </button>
-        </div>
-      </div>
+    <!-- TELEPORTED MODAL DIALOG (ANTI-KEPOTONG DI SEMUA LAYAR HP & TABLET) -->
+    <teleport to="body">
+      <div v-if="isOpen" class="lang-modal-backdrop" @click="isOpen = false">
+        <div class="lang-modal-dialog" @click.stop>
+          <div class="lang-modal-header">
+            <div class="lang-modal-title-row">
+              <span class="modal-title-text">
+                <Globe :size="16" /> Pilih Bahasa / Select Language
+              </span>
+              <button
+                type="button"
+                class="modal-close-icon-btn"
+                @click="isOpen = false"
+                aria-label="Tutup"
+              >
+                <X :size="18" />
+              </button>
+            </div>
 
-      <div class="lang-list-container">
-        <!-- BAHASA POPULER (HANYA MUNCUL SAAT TIDAK SEARCH) -->
-        <div v-if="popularLanguages.length > 0" class="lang-section-block">
-          <span class="section-label">Bahasa Utama & Rekomendasi</span>
-          <div class="lang-grid-quick">
-            <button
-              v-for="lang in popularLanguages"
-              :key="'pop-' + lang.code"
-              type="button"
-              class="lang-chip-btn"
-              :class="{ selected: currentLangCode === lang.code }"
-              @click="selectLanguage(lang)"
-            >
-              <span>{{ lang.flag }}</span>
-              <span>{{ lang.name }}</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- DAFTAR SEMUA BAHASA (SCROLL VERTIKAL KE BAWAH) -->
-        <div class="lang-section-block">
-          <span class="section-label">
-            {{ searchQuery ? `Hasil Pencarian (${filteredLanguages.length})` : 'Semua Bahasa (Alfabetis)' }}
-          </span>
-
-          <div v-if="filteredLanguages.length === 0" class="empty-lang-state">
-            Bahasa "{{ searchQuery }}" tidak ditemukan.
+            <div class="lang-search-wrap">
+              <Search :size="15" class="search-icon" />
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Cari bahasa / Search language..."
+                class="lang-search-input"
+                autofocus
+              />
+              <button
+                v-if="searchQuery"
+                class="clear-search-btn"
+                @click="searchQuery = ''"
+                type="button"
+              >
+                <X :size="13" />
+              </button>
+            </div>
           </div>
 
-          <ul v-else class="lang-vertical-list">
-            <li
-              v-for="lang in filteredLanguages"
-              :key="lang.code"
-              class="lang-list-item"
-              :class="{ selected: currentLangCode === lang.code }"
-              @click="selectLanguage(lang)"
-            >
-              <div class="lang-item-left">
-                <span class="item-flag">{{ lang.flag }}</span>
-                <div class="item-text">
-                  <span class="item-name">{{ lang.name }}</span>
-                  <small class="item-native">{{ lang.native }}</small>
-                </div>
+          <div class="lang-list-container">
+            <!-- BAHASA POPULER (HANYA MUNCUL SAAT TIDAK SEARCH) -->
+            <div v-if="popularLanguages.length > 0" class="lang-section-block">
+              <span class="section-label">Bahasa Utama & Rekomendasi</span>
+              <div class="lang-grid-quick">
+                <button
+                  v-for="lang in popularLanguages"
+                  :key="'pop-' + lang.code"
+                  type="button"
+                  class="lang-chip-btn"
+                  :class="{ selected: currentLangCode === lang.code }"
+                  @click="selectLanguage(lang)"
+                >
+                  <span class="chip-flag">{{ lang.flag }}</span>
+                  <span class="chip-name">{{ lang.name }}</span>
+                </button>
               </div>
-              <Check v-if="currentLangCode === lang.code" :size="16" class="check-icon" />
-            </li>
-          </ul>
+            </div>
+
+            <!-- DAFTAR SEMUA BAHASA (SCROLL VERTIKAL KE BAWAH) -->
+            <div class="lang-section-block">
+              <span class="section-label">
+                {{ searchQuery ? `Hasil Pencarian (${filteredLanguages.length})` : 'Semua Bahasa (Alfabetis)' }}
+              </span>
+
+              <div v-if="filteredLanguages.length === 0" class="empty-lang-state">
+                Bahasa "{{ searchQuery }}" tidak ditemukan.
+              </div>
+
+              <ul v-else class="lang-vertical-list">
+                <li
+                  v-for="lang in filteredLanguages"
+                  :key="lang.code"
+                  class="lang-list-item"
+                  :class="{ selected: currentLangCode === lang.code }"
+                  @click="selectLanguage(lang)"
+                >
+                  <div class="lang-item-left">
+                    <span class="item-flag">{{ lang.flag }}</span>
+                    <div class="item-text">
+                      <span class="item-name">{{ lang.name }}</span>
+                      <small class="item-native">{{ lang.native }}</small>
+                    </div>
+                  </div>
+                  <Check v-if="currentLangCode === lang.code" :size="16" class="check-icon" />
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </teleport>
   </div>
 </template>
 
@@ -234,6 +265,14 @@ onUnmounted(() => {
   text-overflow: ellipsis;
 }
 
+.lang-name-full {
+  display: inline;
+}
+
+.lang-name-short {
+  display: none;
+}
+
 .chevron-icon {
   opacity: 0.8;
   transition: transform 0.2s ease;
@@ -243,38 +282,113 @@ onUnmounted(() => {
   transform: rotate(180deg);
 }
 
-/* POPOVER CARD KE BAWAH */
-.lang-popover-card {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: 330px;
-  max-width: 90vw;
+/* RESPONSIVE MOBILE TRIGGER */
+@media (max-width: 600px) {
+  .lang-name-full {
+    display: none !important;
+  }
+  .lang-name-short {
+    display: inline !important;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .globe-icon {
+    display: none;
+  }
+  .lang-trigger-btn {
+    padding: 3px 8px;
+    gap: 4px;
+  }
+}
+
+/* TELEPORTED MODAL DIALOG (ANTI-CUT-OFF DI SEMUA LAYAR HP & TABLET) */
+.lang-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999999;
+  background: rgba(11, 31, 51, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  animation: modalBackdropFadeIn 0.2s ease-out;
+}
+
+@keyframes modalBackdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.lang-modal-dialog {
+  width: 100%;
+  max-width: 430px;
+  max-height: 84vh;
   background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 14px 35px rgba(11, 31, 51, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.08);
-  z-index: 100000;
+  border-radius: 14px;
+  box-shadow: 0 25px 50px -12px rgba(11, 31, 51, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: popoverFadeIn 0.18s ease-out;
+  animation: modalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes popoverFadeIn {
+@keyframes modalScaleIn {
   from {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: scale(0.94) translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1) translateY(0);
   }
 }
 
-.lang-popover-header {
-  padding: 10px 12px;
+.lang-modal-header {
+  padding: 14px 16px 12px;
   background: #f8fafc;
   border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lang-modal-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.modal-title-text {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0b1f33;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-close-icon-btn {
+  background: #e2e8f0;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.modal-close-icon-btn:hover {
+  background: #cbd5e1;
+  color: #0f172a;
 }
 
 .lang-search-wrap {

@@ -6,10 +6,13 @@ const props = defineProps({
   item: { type: Object, default: null },
   categoryObj: { type: Object, default: null },
   mode: { type: String, default: 'product' }, // 'product' or 'category'
-  whatsapp: { type: String, default: '628132207311' }
+  whatsapp: { type: String, default: '628132207311' },
+  lang: { type: String, default: 'id' }
 })
 
 const emit = defineEmits(['close', 'request-quote'])
+
+const isEn = computed(() => props.lang === 'en')
 
 const defaultImg = 'https://images.unsplash.com/photo-1582738411706-bfc8e691d1c2?auto=format&fit=crop&w=900&q=80'
 const activeImage = ref('')
@@ -102,38 +105,38 @@ const waLink = computed(() => {
 
           <!-- PRODUCT TECHNICAL SPECS -->
           <div v-if="mode === 'product'" class="specs-table-box">
-            <h4>Spesifikasi Produk & Kebutuhan Mold</h4>
+            <h4>{{ isEn ? 'Product Specifications & Mold Requirements' : 'Spesifikasi Produk & Kebutuhan Mold' }}</h4>
             <div class="specs-grid">
               <div class="spec-item">
-                <small>Perkiraan Berat Produk</small>
-                <b>{{ item.weightEst || 'Sesuai desain' }}</b>
+                <small>{{ isEn ? 'Estimated Product Weight' : 'Perkiraan Berat Produk' }}</small>
+                <b>{{ item.weightEst || (isEn ? 'Per design' : 'Sesuai desain') }}</b>
               </div>
               <div class="spec-item">
-                <small>Dimensi / Ukuran</small>
-                <b>{{ item.dimensions || 'Sesuai sampel' }}</b>
+                <small>{{ isEn ? 'Dimensions / Size' : 'Dimensi / Ukuran' }}</small>
+                <b>{{ item.dimensions || (isEn ? 'Per sample' : 'Sesuai sampel') }}</b>
               </div>
               <div class="spec-item">
-                <small>Rekomendasi Spesifikasi Mold</small>
+                <small>{{ isEn ? 'Recommended Mold Specs' : 'Rekomendasi Spesifikasi Mold' }}</small>
                 <b>{{ item.moldInfo || 'Single / Multi-Cavity' }}</b>
               </div>
               <div class="spec-item">
-                <small>Material Resin Plastik</small>
-                <b>{{ item.materialType || 'PP / HDPE / ABS / Sesuai kebutuhan' }}</b>
+                <small>{{ isEn ? 'Plastic Resin Material' : 'Material Resin Plastik' }}</small>
+                <b>{{ item.materialType || (isEn ? 'PP / HDPE / ABS / Custom' : 'PP / HDPE / ABS / Sesuai kebutuhan') }}</b>
               </div>
               <div class="spec-item">
-                <small>Estimasi Siklus Cetak</small>
-                <b>{{ item.cycleTime || 'Disesuaikan desain pendingin' }}</b>
+                <small>{{ isEn ? 'Estimated Cycle Time' : 'Estimasi Siklus Cetak' }}</small>
+                <b>{{ item.cycleTime || (isEn ? 'Customized per cooling design' : 'Disesuaikan desain pendingin') }}</b>
               </div>
               <div class="spec-item">
-                <small>Kebutuhan Tonase Mesin</small>
-                <b>{{ item.minMachineTonnage || 'Dikalkulasi saat konsultasi' }}</b>
+                <small>{{ isEn ? 'Required Machine Tonnage' : 'Kebutuhan Tonase Mesin' }}</small>
+                <b>{{ item.minMachineTonnage || (isEn ? 'Calculated upon consultation' : 'Dikalkulasi saat konsultasi') }}</b>
               </div>
             </div>
           </div>
 
           <!-- CATEGORY EXTRA INFO -->
           <div v-if="mode === 'product' && categoryObj && categoryObj.detailContent && categoryObj.detailContent !== item.detailContent" class="cat-context-box">
-            <small>DETAIL KATEGORI {{ categoryObj.name.toUpperCase() }}</small>
+            <small>{{ isEn ? `CATEGORY DETAILS: ${categoryObj.name.toUpperCase()}` : `DETAIL KATEGORI ${categoryObj.name.toUpperCase()}` }}</small>
             <p>{{ categoryObj.detailContent }}</p>
           </div>
 
@@ -141,17 +144,17 @@ const waLink = computed(() => {
           <div class="quote-action-bar">
             <div class="modal-actions">
               <button class="btn btn-primary" @click="emit('request-quote', item)">
-                Pesan / Minta Penawaran Mold Ini <ArrowUpRight :size="16" />
+                {{ isEn ? 'Order / Request Quote for this Mold' : 'Pesan / Minta Penawaran Mold Ini' }} <ArrowUpRight :size="16" />
               </button>
               <a :href="waLink" target="_blank" class="btn btn-wa">
-                <MessageCircle :size="16" /> Konsultasi WhatsApp
+                <MessageCircle :size="16" /> {{ isEn ? 'WhatsApp Consultation' : 'Konsultasi WhatsApp' }}
               </a>
             </div>
           </div>
 
           <div class="modal-notice">
             <ShieldCheck :size="16" />
-            <small>Kami melayani pembuatan molding baru maupun custom untuk menghasilkan produk seperti di atas sesuai ukuran dan kapasitas mesin pabrik Anda.</small>
+            <small>{{ isEn ? 'We provide new and custom injection mold fabrication to produce parts like above tailored to your plant machines.' : 'Kami melayani pembuatan molding baru maupun custom untuk menghasilkan produk seperti di atas sesuai ukuran dan kapasitas mesin pabrik Anda.' }}</small>
           </div>
         </div>
       </div>

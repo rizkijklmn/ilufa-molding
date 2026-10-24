@@ -21,9 +21,48 @@ import {
 import AdminPanel from "./components/AdminPanel.vue";
 import MoldDetailModal from "./components/MoldDetailModal.vue";
 import ProductDetailModal from "./components/ProductDetailModal.vue";
+import LanguageSelector from "./components/LanguageSelector.vue";
+import { LOCALES } from "./locales.js";
 
 const API = import.meta.env.VITE_API_URL || "/api";
 const WA_DEFAULT = import.meta.env.VITE_WHATSAPP_NUMBER || "628132207311";
+
+// --- Multi-Language & Automatic Translation Engine ---
+const currentLang = ref(localStorage.getItem("ilufa_lang") || "id");
+
+function applyGoogleTranslate(lang) {
+  try {
+    const hostname = window.location.hostname;
+    const cookieVal = lang === "id" ? "/id/id" : `/id/${lang}`;
+    document.cookie = `googtrans=${cookieVal}; path=/;`;
+    document.cookie = `googtrans=${cookieVal}; path=/; domain=${hostname};`;
+    if (hostname.includes(".")) {
+      const parts = hostname.split(".");
+      if (parts.length > 1) {
+        const rootDomain = "." + parts.slice(-2).join(".");
+        document.cookie = `googtrans=${cookieVal}; path=/; domain=${rootDomain};`;
+      }
+    }
+
+    const select = document.querySelector(".goog-te-combo");
+    if (select) {
+      select.value = lang;
+      select.dispatchEvent(new Event("change"));
+    }
+  } catch {}
+}
+
+function setLang(lang) {
+  currentLang.value = lang;
+  try {
+    localStorage.setItem("ilufa_lang", lang);
+  } catch {}
+  applyGoogleTranslate(lang);
+}
+
+function t(key, fallback = "") {
+  return LOCALES[currentLang.value]?.[key] ?? fallback ?? key;
+}
 
 // --- View Mode: 'site' or 'admin' ---
 const viewMode = ref("site");
@@ -59,6 +98,12 @@ const cms = ref({
   general: {
     siteName: "iLUFA MOLDING",
     siteTagline: "INDUSTRIAL MOLD PROCUREMENT",
+    logoUrl: "",
+    themeColors: {
+      primaryNavy: "#0b1f33",
+      secondaryNavy: "#122e47",
+      accentGold: "#d9aa52",
+    },
     topbarNotice:
       "Jasa Pemesanan Molding Import, Pembuatan Molding Plastik Custom & Jual Molding Injeksi Plastik Bekas",
     whatsappNumber: WA_DEFAULT,
@@ -183,6 +228,33 @@ const loadingMolds = ref(true);
 const loadError = ref("");
 const query = ref("");
 const filterType = ref("ALL");
+const moldCategoryFilter = ref("ALL");
+const catalogPage = ref(1);
+const catalogPageSize = ref(8);
+
+// Reset catalog page whenever filters or search query change
+watch([filterType, moldCategoryFilter, query], () => {
+  catalogPage.value = 1;
+});
+
+// Real-time CSS Variables Injection for Theme Customization
+function applyThemeColors() {
+  const colors = cms.value?.general?.themeColors;
+  if (!colors) return;
+  const root = document.documentElement;
+  if (colors.primaryNavy) root.style.setProperty("--navy", colors.primaryNavy);
+  if (colors.secondaryNavy) root.style.setProperty("--navy2", colors.secondaryNavy);
+  if (colors.accentGold) {
+    root.style.setProperty("--gold", colors.accentGold);
+    root.style.setProperty("--gold-light", colors.accentGold + "20");
+  }
+}
+
+watch(
+  () => cms.value?.general?.themeColors,
+  applyThemeColors,
+  { deep: true, immediate: true }
+);
 
 // Modals State
 const selectedMold = ref(null);
@@ -282,24 +354,57 @@ const filteredMolds = computed(() =>
     if (hiddenCategoryNames.value.has(m.category)) return false;
     const matchesType =
       filterType.value === "ALL" || m.type === filterType.value;
-    const search = query.value.toLowerCase();
+    const matchesCategory =
+      moldCategoryFilter.value === "ALL" || m.category === moldCategoryFilter.value;
+    const search = query.value.toLowerCase().trim();
     const matchesQuery =
       !search ||
-      `${m.name} ${m.code} ${m.category}`.toLowerCase().includes(search);
-    return matchesType && matchesQuery;
+      `${m.name} ${m.code} ${m.category} ${m.material || ""}`.toLowerCase().includes(search);
+    return matchesType && matchesCategory && matchesQuery;
   }),
 );
 
-const typeLabel = (type) =>
-  ({ NEW: "Molding Baru", CUSTOM: "Custom", USED: "Second / Bekas" })[type] ||
-  type;
-const statusLabel = (status) =>
-  ({
-    AVAILABLE: "Tersedia",
-    ON_ORDER: "PO / Indent",
-    NEGOTIATION: "Negosiasi",
-    SOLD: "Terjual",
-  })[status] || status;
+const totalCatalogPages = computed(() => {
+  return Math.ceil(filteredMolds.value.length / catalogPageSize.value) || 1;
+});
+
+const paginatedMolds = computed(() => {
+  const start = (catalogPage.value - 1) * catalogPageSize.value;
+  return filteredMolds.value.slice(start, start + catalogPageSize.value);
+});
+
+const typeLabel = (type) => {
+  if (currentLang.value === "en") {
+    return (
+      { NEW: "New Mold", CUSTOM: "Custom", USED: "Used Mold" }[type] || type
+    );
+  }
+  return (
+    { NEW: "Molding Baru", CUSTOM: "Custom", USED: "Second / Bekas" }[type] ||
+    type
+  );
+};
+
+const statusLabel = (status) => {
+  if (currentLang.value === "en") {
+    return (
+      {
+        AVAILABLE: "Ready (In Stock)",
+        ON_ORDER: "PO / Indent",
+        NEGOTIATION: "Negotiation",
+        SOLD: "Sold",
+      }[status] || status
+    );
+  }
+  return (
+    {
+      AVAILABLE: "Tersedia",
+      ON_ORDER: "PO / Indent",
+      NEGOTIATION: "Negosiasi",
+      SOLD: "Terjual",
+    }[status] || status
+  );
+};
 
 const waLink = computed(() => {
   const num = cms.value.general.whatsappNumber || WA_DEFAULT;
@@ -585,6 +690,12 @@ onMounted(() => {
   window.addEventListener("hashchange", handleHashChange);
   updateSeoHeadAndSchema();
   refreshAllPublicData();
+
+  if (currentLang.value && currentLang.value !== "id") {
+    setTimeout(() => {
+      applyGoogleTranslate(currentLang.value);
+    }, 600);
+  }
 });
 
 onUnmounted(() => {
@@ -612,16 +723,9 @@ onUnmounted(() => {
         <div class="container topbar-inner">
           <span class="topbar-notice">{{ cms.general.topbarNotice }}</span>
           <div class="topbar-right">
-            <a
-              :href="waLink"
-              target="_blank"
-              rel="noreferrer"
-              class="topbar-wa"
-            >
-              <MessageCircle :size="15" /> <span>Konsultasi WhatsApp</span>
-            </a>
+            <LanguageSelector />
             <button class="admin-link-btn" @click="setViewMode('admin')">
-              <Lock :size="12" /> <span>Admin & CMS</span>
+              <Lock :size="12" /> <span>{{ t('adminBtn', 'Admin & CMS') }}</span>
             </button>
           </div>
         </div>
@@ -631,13 +735,19 @@ onUnmounted(() => {
       <header class="header">
         <div class="container nav">
           <a href="#" class="brand" aria-label="iLUFA Molding beranda">
-            <span class="brand-mark">i</span>
-            <span>
-              {{ cms.general.siteName || "iLUFA MOLDING" }}
-              <small>{{
+            <img
+              v-if="cms.general.logoUrl"
+              :src="cms.general.logoUrl"
+              :alt="cms.general.siteName || 'iLUFA Molding'"
+              class="brand-logo-img"
+            />
+            <span v-else class="brand-mark">i</span>
+            <div class="brand-info">
+              <span class="brand-name">{{ cms.general.siteName || "iLUFA MOLDING" }}</span>
+              <small class="brand-tagline">{{
                 cms.general.siteTagline || "INDUSTRIAL MOLD PROCUREMENT"
               }}</small>
-            </span>
+            </div>
           </a>
 
           <button
@@ -650,16 +760,16 @@ onUnmounted(() => {
           </button>
 
           <nav :class="{ 'nav-open': menuOpen }">
-            <a href="#layanan" @click="menuOpen = false">Layanan</a>
-            <a href="#katalog" @click="menuOpen = false">Katalog Molding</a>
+            <a href="#layanan" @click="menuOpen = false">{{ t('navServices', 'Layanan') }}</a>
+            <a href="#katalog" @click="menuOpen = false">{{ t('navCatalog', 'Katalog Molding') }}</a>
             <a href="#hasil-cetakan" @click="menuOpen = false"
-              >Contoh Hasil Cetak</a
+              >{{ t('navProducts', 'Contoh Hasil Cetak') }}</a
             >
-            <a href="#proses" @click="menuOpen = false">Cara Pemesanan</a>
-            <a href="#faq" @click="menuOpen = false">FAQ</a>
-            <a href="#tentang" @click="menuOpen = false">Tentang Kami</a>
+            <a href="#proses" @click="menuOpen = false">{{ t('navProcess', 'Cara Pemesanan') }}</a>
+            <a href="#faq" @click="menuOpen = false">{{ t('navFaq', 'FAQ') }}</a>
+            <a href="#tentang" @click="menuOpen = false">{{ t('navAbout', 'Tentang Kami') }}</a>
             <button class="btn btn-primary nav-cta" @click="jumpTo('rfq')">
-              Minta Penawaran <ArrowUpRight :size="16" />
+              {{ t('navRfq', 'Minta Penawaran') }} <ArrowUpRight :size="16" />
             </button>
           </nav>
         </div>
@@ -732,29 +842,29 @@ onUnmounted(() => {
             <div>
               <Factory />
               <span
-                ><b>Solusi Industri</b
-                ><small>Fokus pada kebutuhan produksi</small></span
+                ><b>{{ t('trust1Title', 'Solusi Industri') }}</b
+                ><small>{{ t('trust1Desc', 'Fokus pada kebutuhan produksi') }}</small></span
               >
             </div>
             <div>
               <Boxes />
               <span
-                ><b>3 Pilihan Layanan</b
-                ><small>Baru, custom, dan second</small></span
+                ><b>{{ t('trust2Title', '3 Pilihan Layanan') }}</b
+                ><small>{{ t('trust2Desc', 'Baru, custom, dan second') }}</small></span
               >
             </div>
             <div>
               <ClipboardCheck />
               <span
-                ><b>Proses Terarah</b
-                ><small>Spesifikasi hingga pengiriman</small></span
+                ><b>{{ t('trust3Title', 'Proses Terarah') }}</b
+                ><small>{{ t('trust3Desc', 'Spesifikasi hingga pengiriman') }}</small></span
               >
             </div>
             <div>
               <ShieldCheck />
               <span
-                ><b>Informasi Transparan</b
-                ><small>Konfirmasi sebelum transaksi</small></span
+                ><b>{{ t('trust4Title', 'Pengiriman Seluruh Indonesia') }}</b
+                ><small>{{ t('trust4Desc', 'Dukungan logistik ke pabrik') }}</small></span
               >
             </div>
           </div>
@@ -766,7 +876,7 @@ onUnmounted(() => {
             <div class="section-heading">
               <div>
                 <div class="eyebrow dark">
-                  <span class="eyebrow-line"></span> LAYANAN KAMI
+                  <span class="eyebrow-line"></span> {{ t('servicesEyebrow', 'LAYANAN KAMI') }}
                 </div>
                 <h2>
                   Satu partner untuk<br /><span>berbagai kebutuhan mold.</span>
@@ -815,16 +925,16 @@ onUnmounted(() => {
             <div class="section-heading catalog-heading">
               <div>
                 <div class="eyebrow dark">
-                  <span class="eyebrow-line"></span> KATALOG MOLDING
+                  <span class="eyebrow-line"></span> {{ t('catalogEyebrow', 'KATALOG MOLDING') }}
                 </div>
                 <h2>
-                  Temukan opsi yang<br /><span>sesuai kebutuhan Anda.</span>
+                  {{ currentLang === 'en' ? 'Find the right mold option' : 'Temukan opsi yang' }}<br /><span
+                    >{{ currentLang === 'en' ? 'for your manufacturing needs.' : 'sesuai kebutuhan Anda.' }}</span
+                  >
                 </h2>
               </div>
               <p>
-                Klik salah satu molding untuk melihat detail spesifikasi lengkap
-                (cavity, berat, dimensi base, tonase mesin) dan meminta
-                penawaran.
+                {{ t('catalogDesc', 'Klik salah satu molding untuk melihat detail spesifikasi lengkap (cavity, berat, dimensi base, tonase mesin) dan meminta penawaran.') }}
               </p>
             </div>
 
@@ -833,17 +943,17 @@ onUnmounted(() => {
                 <Search :size="18" />
                 <input
                   v-model="query"
-                  placeholder="Cari nama, kode, kategori..."
-                  aria-label="Cari katalog"
+                  :placeholder="t('searchPlaceholder', 'Cari nama, kode, kategori...')"
+                  :aria-label="t('searchPlaceholder', 'Cari katalog')"
                 />
               </div>
               <div class="filter-tabs">
                 <button
                   v-for="f in [
-                    { label: 'Semua', value: 'ALL' },
-                    { label: 'Baru', value: 'NEW' },
-                    { label: 'Custom', value: 'CUSTOM' },
-                    { label: 'Second', value: 'USED' },
+                    { label: t('filterAll', 'Semua'), value: 'ALL' },
+                    { label: t('filterNew', 'Baru'), value: 'NEW' },
+                    { label: t('filterCustom', 'Custom'), value: 'CUSTOM' },
+                    { label: t('filterUsed', 'Second'), value: 'USED' },
                   ]"
                   :key="f.value"
                   :class="{ active: filterType === f.value }"
@@ -854,8 +964,30 @@ onUnmounted(() => {
               </div>
             </div>
 
+            <!-- Category Pills Bar Filter -->
+            <div class="catalog-category-bar">
+              <button
+                type="button"
+                class="cat-pill-btn"
+                :class="{ active: moldCategoryFilter === 'ALL' }"
+                @click="moldCategoryFilter = 'ALL'"
+              >
+                {{ t('categoryFilterAll', 'Semua Kategori') }}
+              </button>
+              <button
+                v-for="cat in visibleCategories"
+                :key="cat.id"
+                type="button"
+                class="cat-pill-btn"
+                :class="{ active: moldCategoryFilter === cat.name }"
+                @click="moldCategoryFilter = cat.name"
+              >
+                {{ cat.name }}
+              </button>
+            </div>
+
             <div v-if="loadingMolds" class="empty-state">
-              Memuat katalog molding...
+              {{ t('loadingMolds', 'Memuat katalog molding...') }}
             </div>
             <div v-else-if="loadError" class="empty-state error-state">
               {{ loadError }}
@@ -864,7 +996,7 @@ onUnmounted(() => {
             <div v-else-if="filteredMolds.length" class="mold-grid">
               <article
                 class="mold-card"
-                v-for="mold in filteredMolds"
+                v-for="mold in paginatedMolds"
                 :key="mold.id"
                 @click="selectedMold = mold"
                 style="cursor: pointer"
@@ -891,7 +1023,7 @@ onUnmounted(() => {
                     "
                     class="gallery-pill"
                   >
-                    +{{ mold.galleryImages.filter(Boolean).length }} Foto Detail
+                    +{{ mold.galleryImages.filter(Boolean).length }} {{ t('photoDetailSuffix', 'Foto Detail') }}
                   </span>
                 </div>
                 <div class="mold-body">
@@ -913,8 +1045,8 @@ onUnmounted(() => {
                   </div>
                   <div class="mold-footer">
                     <div>
-                      <small>HARGA</small>
-                      <b>{{ mold.priceLabel || "Minta penawaran" }}</b>
+                      <small>{{ t('priceStatus', 'STATUS HARGA') }}</small>
+                      <b>{{ mold.priceLabel || t('askQuotation', 'Minta penawaran') }}</b>
                     </div>
                     <button
                       class="icon-btn"
@@ -927,7 +1059,49 @@ onUnmounted(() => {
               </article>
             </div>
             <div v-else class="empty-state">
-              Belum ada item molding yang ditampilkan untuk filter ini.
+              {{ t('noMoldsFound', 'Belum ada item molding yang ditampilkan untuk filter ini.') }}
+            </div>
+
+            <!-- Pagination Bar for Catalog -->
+            <div v-if="filteredMolds.length > catalogPageSize" class="catalog-pagination">
+              <div class="pagination-info">
+                {{
+                  t('paginationInfo', 'Menampilkan {from} - {to} dari {total} unit molding')
+                    .replace('{from}', (catalogPage - 1) * catalogPageSize + 1)
+                    .replace('{to}', Math.min(catalogPage * catalogPageSize, filteredMolds.length))
+                    .replace('{total}', filteredMolds.length)
+                }}
+              </div>
+              <div class="pagination-controls">
+                <button
+                  type="button"
+                  class="page-btn"
+                  :disabled="catalogPage <= 1"
+                  @click="catalogPage--"
+                  :aria-label="t('prevPage', 'Sebelumnya')"
+                >
+                  ‹ {{ t('prevPage', 'Sebelumnya') }}
+                </button>
+                <button
+                  v-for="p in totalCatalogPages"
+                  :key="p"
+                  type="button"
+                  class="page-btn"
+                  :class="{ active: catalogPage === p }"
+                  @click="catalogPage = p"
+                >
+                  {{ p }}
+                </button>
+                <button
+                  type="button"
+                  class="page-btn"
+                  :disabled="catalogPage >= totalCatalogPages"
+                  @click="catalogPage++"
+                  :aria-label="t('nextPage', 'Selanjutnya')"
+                >
+                  {{ t('nextPage', 'Selanjutnya') }} ›
+                </button>
+              </div>
             </div>
 
             <div class="catalog-footnote">
@@ -1306,39 +1480,40 @@ onUnmounted(() => {
       <footer class="footer">
         <div class="container footer-main">
           <div class="brand footer-brand">
-            <span class="brand-mark">i</span>
-            <span>
-              {{ cms.general.siteName || "iLUFA MOLDING" }}
-              <small>{{
+            <img
+              v-if="cms.general.logoUrl"
+              :src="cms.general.logoUrl"
+              :alt="cms.general.siteName || 'iLUFA Molding'"
+              class="brand-logo-img"
+            />
+            <span v-else class="brand-mark">i</span>
+            <div class="brand-info">
+              <span class="brand-name" style="color: #ffffff">{{ cms.general.siteName || "iLUFA MOLDING" }}</span>
+              <small class="brand-tagline" style="color: #94a3b8">{{
                 cms.general.siteTagline || "INDUSTRIAL MOLD PROCUREMENT"
               }}</small>
-            </span>
+            </div>
           </div>
           <p>
-            {{ cms.general.address }}<br />Email: {{ cms.general.email
-            }}<br />Telp: {{ cms.general.phone }}
+            {{ cms.general.address }}<br />
+            Email: {{ cms.general.email }}<br />
+            Telp: {{ cms.general.phone }}
+            <template v-if="cms.general.operationalHours">
+              <br />Jam Operasional: {{ cms.general.operationalHours }}
+            </template>
           </p>
           <div class="footer-links">
-            <a href="#layanan">Layanan</a>
-            <a href="#katalog">Katalog Molding</a>
-            <a href="#hasil-cetakan">Contoh Hasil Cetak</a>
-            <a href="#proses">Cara Pemesanan</a>
-            <a href="#faq">FAQ</a>
-            <a href="#rfq">Minta Penawaran</a>
-            <a
-              class="footer-wa"
-              :href="waLink"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <MessageCircle /> Hubungi via WhatsApp
-            </a>
+            <a href="#layanan">{{ t('navServices', 'Layanan') }}</a>
+            <a href="#katalog">{{ t('navCatalog', 'Katalog Molding') }}</a>
+            <a href="#hasil-cetakan">{{ t('navProducts', 'Contoh Hasil Cetak') }}</a>
+            <a href="#proses">{{ t('navProcess', 'Cara Pemesanan') }}</a>
+            <a href="#faq">{{ t('navFaq', 'FAQ') }}</a>
+            <a href="#rfq">{{ t('navRfq', 'Minta Penawaran') }}</a>
           </div>
         </div>
         <div class="container footer-bottom">
           <span
-            >© {{ new Date().getFullYear() }} {{ cms.general.siteName }}. All
-            rights reserved.</span
+            >© {{ new Date().getFullYear() }} {{ cms.general.siteName }}. {{ t('footerCopyright', 'All rights reserved.') }}</span
           >
           <span
             >Jual Molding Injeksi Plastik Bekas · Jasa Pemesanan Molding Import
@@ -1347,11 +1522,30 @@ onUnmounted(() => {
         </div>
       </footer>
 
+      <!-- FLOATING WHATSAPP CTA BUTTON -->
+      <a
+        :href="waLink"
+        target="_blank"
+        rel="noreferrer"
+        class="floating-wa-btn"
+        :aria-label="t('waFloatCta', 'Konsultasi dengan Kami')"
+      >
+        <div class="wa-icon-bubble">
+          <MessageCircle :size="20" />
+          <span class="wa-pulse"></span>
+        </div>
+        <div class="wa-btn-content">
+          <span class="wa-btn-sub">{{ t('waFloatSub', 'Online & Fast Response') }}</span>
+          <span class="wa-btn-text">{{ t('waFloatCta', 'Konsultasi dengan Kami') }}</span>
+        </div>
+      </a>
+
       <!-- MOLD DETAIL MODAL -->
       <MoldDetailModal
         v-if="selectedMold"
         :mold="selectedMold"
         :whatsapp="cms.general.whatsappNumber"
+        :lang="currentLang"
         @close="selectedMold = null"
         @request-quote="handleRequestQuoteFromMoldModal"
       />
@@ -1363,6 +1557,7 @@ onUnmounted(() => {
         :mode="detailModalMode"
         :category-obj="findCategoryForProduct(detailModalItem)"
         :whatsapp="cms.general.whatsappNumber"
+        :lang="currentLang"
         @close="detailModalItem = null"
         @request-quote="handleRequestQuoteFromProductModal"
       />

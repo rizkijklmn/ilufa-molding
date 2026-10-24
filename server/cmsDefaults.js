@@ -71,6 +71,12 @@ export const DEFAULT_CMS = {
   general: {
     siteName: 'iLUFA MOLDING',
     siteTagline: 'Industrial Mold Procurement',
+    logoUrl: '',
+    themeColors: {
+      primaryNavy: '#0b1f33',
+      secondaryNavy: '#122e47',
+      accentGold: '#d9aa52'
+    },
     topbarNotice: 'Jasa Pemesanan Molding Import, Pembuatan Molding Plastik Custom & Jual Molding Injeksi Plastik Bekas',
     whatsappNumber: '628132207311',
     whatsappMessage: 'Halo iLUFA Molding, saya ingin konsultasi kebutuhan molding injeksi plastik.',

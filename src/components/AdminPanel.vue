@@ -843,6 +843,25 @@ async function resetCMS() {
   }
 }
 
+function ensureThemeColors() {
+  if (!cms.value.general) cms.value.general = {};
+  if (!cms.value.general.themeColors) {
+    cms.value.general.themeColors = {
+      primaryNavy: "#0b1f33",
+      secondaryNavy: "#122e47",
+      accentGold: "#d9aa52",
+    };
+  }
+}
+
+function applyColorPreset(primary, secondary, gold) {
+  ensureThemeColors();
+  cms.value.general.themeColors.primaryNavy = primary;
+  cms.value.general.themeColors.secondaryNavy = secondary;
+  cms.value.general.themeColors.accentGold = gold;
+  showToast("Palet tema diterapkan, klik Simpan untuk memperbarui website.");
+}
+
 // --- FAQ Actions ---
 function addFaqItem() {
   if (!cms.value.faqs) cms.value.faqs = [];
@@ -1686,6 +1705,12 @@ onMounted(() => {
             >
               6. SEO & Kata Kunci Google
             </button>
+            <button
+              :class="{ active: cmsSubTab === 'theme' }"
+              @click="cmsSubTab = 'theme'; ensureThemeColors()"
+            >
+              7. Logo & Warna Tema
+            </button>
           </div>
 
           <div class="cms-form-card" v-if="cms && cms.general">
@@ -2017,6 +2042,200 @@ onMounted(() => {
                     placeholder="https://ilufamolding.com/"
                   />
                 </label>
+              </div>
+            </div>
+
+            <!-- SUBTAB 7: LOGO & THEME COLORS -->
+            <div v-if="cmsSubTab === 'theme'" class="form-section">
+              <h3 class="form-title">Logo & Konsep Warna Website</h3>
+              <p class="form-help">
+                Sesuaikan logo resmi perusahaan serta palet warna website (Warna Utama, Latar Sekunder, dan Aksen Emas) agar selaras dengan identitas brand Anda.
+              </p>
+
+              <!-- BAGIAN 1: LOGO WEBSITE -->
+              <div class="theme-card-block">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; flex-wrap: wrap; gap: 8px">
+                  <div>
+                    <h4 style="margin: 0 0 4px; font-size: 15px; color: #0b1f33">1. Logo Perusahaan / Brand</h4>
+                    <p style="font-size: 12px; color: #64748b; margin: 0">
+                      Unggah logo resmi Anda (format PNG transparan, WEBP, atau JPG). Jika dikosongkan, website otomatis menampilkan lambang inisial kotak default.
+                    </p>
+                  </div>
+                  <button
+                    v-if="cms.general.logoUrl"
+                    class="btn btn-outline-danger btn-sm"
+                    @click="cms.general.logoUrl = ''"
+                    type="button"
+                  >
+                    <Trash2 :size="13" /> Hapus Logo (Gunakan Inisial)
+                  </button>
+                </div>
+
+                <div class="input-with-upload">
+                  <input
+                    v-model="cms.general.logoUrl"
+                    placeholder="URL Gambar Logo (atau klik tombol Unggah Logo)"
+                  />
+                  <label class="btn-upload">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      @change="handleFileUpload($event, cms.general, 'logoUrl')"
+                    />
+                    <span><Upload :size="14" /> Unggah Logo</span>
+                  </label>
+                </div>
+
+                <!-- Preview Logo -->
+                <div v-if="cms.general.logoUrl" class="logo-preview-grid">
+                  <div class="logo-preview-box light">
+                    <span class="preview-label">Pratinjau di Header (Latar Putih)</span>
+                    <div class="preview-img-wrap">
+                      <img :src="cms.general.logoUrl" alt="Logo Header Preview" />
+                    </div>
+                  </div>
+                  <div class="logo-preview-box dark" :style="{ background: cms.general?.themeColors?.primaryNavy || '#0b1f33' }">
+                    <span class="preview-label" style="color: #94a3b8">Pratinjau di Footer (Latar Gelap)</span>
+                    <div class="preview-img-wrap">
+                      <img :src="cms.general.logoUrl" alt="Logo Footer Preview" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- BAGIAN 2: PALET WARNA WEBSITE -->
+              <div class="theme-card-block" style="margin-top: 24px">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px">
+                  <div>
+                    <h4 style="margin: 0 0 4px; font-size: 15px; color: #0b1f33">2. Konsep Warna Tema Website</h4>
+                    <p style="font-size: 12px; color: #64748b; margin: 0">
+                      Ubah warna tema utama, sekunder, dan aksen emas. Warna langsung diterapkan ke seluruh halaman website.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="btn btn-outline btn-sm"
+                    @click="applyColorPreset('#0b1f33', '#122e47', '#d9aa52')"
+                  >
+                    <RotateCcw :size="13" /> Reset ke Default iLUFA
+                  </button>
+                </div>
+
+                <div class="theme-colors-grid">
+                  <!-- Warna 1: Primary Navy -->
+                  <div class="color-picker-card">
+                    <div class="color-swatch-circle" :style="{ background: cms.general?.themeColors?.primaryNavy || '#0b1f33' }"></div>
+                    <div class="color-details">
+                      <span class="color-label">Warna Utama (Primary)</span>
+                      <small class="color-desc">Header brand, Hero banner, Tombol utama</small>
+                      <div class="color-input-group">
+                        <input
+                          type="color"
+                          v-model="cms.general.themeColors.primaryNavy"
+                          class="color-native-input"
+                        />
+                        <input
+                          type="text"
+                          v-model="cms.general.themeColors.primaryNavy"
+                          class="color-hex-input"
+                          maxlength="7"
+                          placeholder="#0b1f33"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Warna 2: Secondary Navy -->
+                  <div class="color-picker-card">
+                    <div class="color-swatch-circle" :style="{ background: cms.general?.themeColors?.secondaryNavy || '#122e47' }"></div>
+                    <div class="color-details">
+                      <span class="color-label">Warna Latar (Secondary)</span>
+                      <small class="color-desc">Topbar pengumuman, Card navy, Footer</small>
+                      <div class="color-input-group">
+                        <input
+                          type="color"
+                          v-model="cms.general.themeColors.secondaryNavy"
+                          class="color-native-input"
+                        />
+                        <input
+                          type="text"
+                          v-model="cms.general.themeColors.secondaryNavy"
+                          class="color-hex-input"
+                          maxlength="7"
+                          placeholder="#122e47"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Warna 3: Accent Gold -->
+                  <div class="color-picker-card">
+                    <div class="color-swatch-circle" :style="{ background: cms.general?.themeColors?.accentGold || '#d9aa52' }"></div>
+                    <div class="color-details">
+                      <span class="color-label">Warna Aksen (Accent)</span>
+                      <small class="color-desc">Tombol CTA emas, Garis eyebrow, Badge highlight</small>
+                      <div class="color-input-group">
+                        <input
+                          type="color"
+                          v-model="cms.general.themeColors.accentGold"
+                          class="color-native-input"
+                        />
+                        <input
+                          type="text"
+                          v-model="cms.general.themeColors.accentGold"
+                          class="color-hex-input"
+                          maxlength="7"
+                          placeholder="#d9aa52"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Rekomendasi Palet Cepat -->
+                <div class="palette-quick-select">
+                  <span class="palette-quick-label">
+                    Pilihan Palet Warna Siap Pakai:
+                  </span>
+                  <div class="palette-chips-wrap">
+                    <button
+                      type="button"
+                      class="btn-palette-chip"
+                      @click="applyColorPreset('#0b1f33', '#122e47', '#d9aa52')"
+                    >
+                      <span class="dot-swatch" style="background: #0b1f33"></span>
+                      <span class="dot-swatch" style="background: #d9aa52"></span>
+                      iLUFA Classic (Navy & Emas)
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-palette-chip"
+                      @click="applyColorPreset('#0f172a', '#1e293b', '#2563eb')"
+                    >
+                      <span class="dot-swatch" style="background: #0f172a"></span>
+                      <span class="dot-swatch" style="background: #2563eb"></span>
+                      Steel Industrial (Slate & Blue)
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-palette-chip"
+                      @click="applyColorPreset('#064e3b', '#065f46', '#10b981')"
+                    >
+                      <span class="dot-swatch" style="background: #064e3b"></span>
+                      <span class="dot-swatch" style="background: #10b981"></span>
+                      Emerald Eco (Dark Green & Emerald)
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-palette-chip"
+                      @click="applyColorPreset('#18181b', '#27272a', '#e11d48')"
+                    >
+                      <span class="dot-swatch" style="background: #18181b"></span>
+                      <span class="dot-swatch" style="background: #e11d48"></span>
+                      Titanium High-Tech (Zinc & Red)
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -4042,6 +4261,176 @@ onMounted(() => {
   flex: 1;
   min-width: 0;
 }
+
+/* THEME & LOGO EDITOR STYLES */
+.theme-card-block {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 20px;
+}
+
+.logo-preview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.logo-preview-box {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.logo-preview-box.light {
+  background: #ffffff;
+}
+
+.preview-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.preview-img-wrap {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.preview-img-wrap img {
+  max-height: 52px;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+.theme-colors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.color-picker-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 14px 16px;
+  border-radius: 6px;
+}
+
+.color-swatch-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  flex-shrink: 0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.color-details {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.color-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.color-desc {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.color-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-native-input {
+  width: 34px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  cursor: pointer;
+  background: none;
+}
+
+.color-hex-input {
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  width: 85px;
+  text-transform: uppercase;
+}
+
+.palette-quick-select {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.palette-quick-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.palette-chips-wrap {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-palette-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-palette-chip:hover {
+  border-color: #0b1f33;
+  background: #f1f5f9;
+}
+
+.dot-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+
 .cms-save-bar {
   border-top: 1px solid #e8edf1;
   margin-top: 28px;

@@ -4,10 +4,13 @@ import { X, ArrowUpRight, MessageCircle, ShieldCheck } from 'lucide-vue-next'
 
 const props = defineProps({
   mold: { type: Object, default: null },
-  whatsapp: { type: String, default: '628132207311' }
+  whatsapp: { type: String, default: '628132207311' },
+  lang: { type: String, default: 'id' }
 })
 
 const emit = defineEmits(['close', 'request-quote'])
+
+const isEn = computed(() => props.lang === 'en')
 
 const defaultImg = 'https://images.unsplash.com/photo-1567789884554-0b844b597180?auto=format&fit=crop&w=1000&q=80'
 const activeImage = ref('')
@@ -31,12 +34,25 @@ watch(() => props.mold, (newMold) => {
   }
 }, { immediate: true })
 
-const typeLabel = (type) => ({ NEW: 'Molding Import Baru', CUSTOM: 'Molding Custom Sesuai Pesanan', USED: 'Molding Second / Bekas' }[type] || type)
-const statusLabel = (status) => ({ AVAILABLE: 'Tersedia (Ready)', ON_ORDER: 'PO / Indent', NEGOTIATION: 'Dalam Negosiasi', SOLD: 'Terjual' }[status] || status)
+const typeLabel = (type) => {
+  if (isEn.value) {
+    return { NEW: 'New Imported Mold', CUSTOM: 'Custom Mold Fabrication', USED: 'Used / Second Mold' }[type] || type
+  }
+  return { NEW: 'Molding Import Baru', CUSTOM: 'Molding Custom Sesuai Pesanan', USED: 'Molding Second / Bekas' }[type] || type
+}
+
+const statusLabel = (status) => {
+  if (isEn.value) {
+    return { AVAILABLE: 'Available (Ready)', ON_ORDER: 'PO / Indent', NEGOTIATION: 'In Negotiation', SOLD: 'Sold' }[status] || status
+  }
+  return { AVAILABLE: 'Tersedia (Ready)', ON_ORDER: 'PO / Indent', NEGOTIATION: 'Dalam Negosiasi', SOLD: 'Terjual' }[status] || status
+}
 
 const waLink = computed(() => {
   if (!props.mold) return '#'
-  const msg = `Halo iLUFA Molding, saya tertarik dengan "${props.mold.name}" (Kode: ${props.mold.code}). Mohon info penawaran dan spesifikasi lengkapnya.`
+  const msg = isEn.value
+    ? `Hello iLUFA Molding, I am interested in "${props.mold.name}" (Code: ${props.mold.code}). Please share complete specifications and official quotation.`
+    : `Halo iLUFA Molding, saya tertarik dengan "${props.mold.name}" (Kode: ${props.mold.code}). Mohon info penawaran dan spesifikasi lengkapnya.`
   return `https://wa.me/${props.whatsapp}?text=${encodeURIComponent(msg)}`
 })
 </script>
@@ -82,53 +98,53 @@ const waLink = computed(() => {
           </div>
 
           <div class="specs-table-box">
-            <h4>Spesifikasi Teknis Mold</h4>
+            <h4>{{ isEn ? 'Technical Mold Specifications' : 'Spesifikasi Teknis Mold' }}</h4>
             <div class="specs-grid">
               <div class="spec-item">
-                <small>Jumlah Cavity</small>
-                <b>{{ mold.cavity ? mold.cavity + ' Cavity' : 'Perlu konfirmasi' }}</b>
+                <small>{{ isEn ? 'Number of Cavities' : 'Jumlah Cavity' }}</small>
+                <b>{{ mold.cavity ? mold.cavity + ' Cavity' : (isEn ? 'To be confirmed' : 'Perlu konfirmasi') }}</b>
               </div>
               <div class="spec-item">
-                <small>Dimensi Mold Base</small>
-                <b>{{ mold.dimensions || 'Sesuai desain' }}</b>
+                <small>{{ isEn ? 'Mold Base Dimensions' : 'Dimensi Mold Base' }}</small>
+                <b>{{ mold.dimensions || (isEn ? 'Per design specs' : 'Sesuai desain') }}</b>
               </div>
               <div class="spec-item">
-                <small>Estimasi Berat</small>
-                <b>{{ mold.weightKg ? mold.weightKg + ' kg' : 'Perlu konfirmasi' }}</b>
+                <small>{{ isEn ? 'Estimated Weight' : 'Estimasi Berat' }}</small>
+                <b>{{ mold.weightKg ? mold.weightKg + ' kg' : (isEn ? 'To be confirmed' : 'Perlu konfirmasi') }}</b>
               </div>
               <div class="spec-item">
-                <small>Material / Baja Mold</small>
-                <b>{{ mold.material || 'P20 / 718 / Sesuai pesanan' }}</b>
+                <small>{{ isEn ? 'Mold Steel Grade' : 'Material / Baja Mold' }}</small>
+                <b>{{ mold.material || (isEn ? 'P20 / 718 / Per request' : 'P20 / 718 / Sesuai pesanan') }}</b>
               </div>
               <div class="spec-item">
-                <small>Kesesuaian Mesin</small>
-                <b>{{ mold.machineTonnage || 'Ditentukan saat konsultasi' }}</b>
+                <small>{{ isEn ? 'Machine Compatibility' : 'Kesesuaian Mesin' }}</small>
+                <b>{{ mold.machineTonnage || (isEn ? 'Determined upon consultation' : 'Ditentukan saat konsultasi') }}</b>
               </div>
               <div class="spec-item">
-                <small>Kondisi & Kelayakan</small>
-                <b>{{ mold.condition || 'Terverifikasi' }}</b>
+                <small>{{ isEn ? 'Condition & Quality' : 'Kondisi & Kelayakan' }}</small>
+                <b>{{ mold.condition || (isEn ? 'Verified' : 'Terverifikasi') }}</b>
               </div>
             </div>
           </div>
 
           <div class="price-quote-banner">
             <div>
-              <small>STATUS HARGA</small>
-              <b>{{ mold.priceLabel || 'Minta Penawaran Resmi' }}</b>
+              <small>{{ isEn ? 'PRICE STATUS' : 'STATUS HARGA' }}</small>
+              <b>{{ mold.priceLabel || (isEn ? 'Request Official Quote' : 'Minta Penawaran Resmi') }}</b>
             </div>
             <div class="modal-actions">
               <button class="btn btn-primary" @click="emit('request-quote', mold)">
-                Minta Penawaran (RFQ) <ArrowUpRight :size="16" />
+                {{ isEn ? 'Request Quote (RFQ)' : 'Minta Penawaran (RFQ)' }} <ArrowUpRight :size="16" />
               </button>
               <a :href="waLink" target="_blank" class="btn btn-wa">
-                <MessageCircle :size="16" /> Chat WhatsApp
+                <MessageCircle :size="16" /> {{ isEn ? 'Chat WhatsApp' : 'Chat WhatsApp' }}
               </a>
             </div>
           </div>
 
           <div class="modal-notice">
             <ShieldCheck :size="16" />
-            <small>Spesifikasi teknis, kelengkapan runner, dan biaya pengiriman dikonfirmasi secara transparan sebelum kesepakatan PO / Indent.</small>
+            <small>{{ isEn ? 'Technical specs, runner completeness, and shipping fees are transparently confirmed prior to PO agreement.' : 'Spesifikasi teknis, kelengkapan runner, dan biaya pengiriman dikonfirmasi secara transparan sebelum kesepakatan PO / Indent.' }}</small>
           </div>
         </div>
       </div>

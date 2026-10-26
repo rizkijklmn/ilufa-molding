@@ -318,6 +318,10 @@ const waLink = computed(() => {
   height: 100%;
   min-height: 340px;
   overflow: hidden;
+  background: #081624;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .single-image-mode .modal-main-img {
   min-height: 100%;
@@ -327,8 +331,9 @@ const waLink = computed(() => {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+  padding: 10px;
 }
 .modal-thumbs-bar {
   display: grid;

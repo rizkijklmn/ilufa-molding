@@ -1,0 +1,121 @@
+{
+  "seo": {
+    "metaTitle": "iLUFA Molding — Jual Molding Injeksi Plastik Bekas, Jasa Pemesanan Molding Import & Pembuatan Molding Plastik Custom",
+    "metaDescription": "iLUFA Molding melayani jasa pemesanan molding import baru, pembuatan molding plastik custom sesuai desain 2D/3D & sampel, serta jual molding injeksi plastik bekas (second) siap pakai untuk pabrik manufaktur plastik di Indonesia.",
+    "metaKeywords": "jual molding injeksi plastik bekas, jasa pemesanan molding import, pembuatan molding plastik custom, cetakan injeksi plastik, jual mold plastik second, pabrik molding plastik indonesia, harga molding injeksi plastik, pengadaan cetakan plastik bekasi cikarang",
+    "canonicalUrl": "https://ilufamolding.com/"
+  },
+  "general": {
+    "siteName": "iLUFA MOLDING",
+    "siteTagline": "Industrial Mold Procurement",
+    "logoUrl": "",
+    "themeColors": {
+      "primaryNavy": "#0b1f33",
+      "secondaryNavy": "#122e47",
+      "accentGold": "#d9aa52"
+    },
+    "topbarNotice": "Jasa Pemesanan Molding Import, Pembuatan Molding Plastik Custom & Jual Molding Injeksi Plastik Bekas",
+    "whatsappNumber": "6289676181754",
+    "whatsappMessage": "Halo iLUFA Molding, saya ingin konsultasi kebutuhan molding injeksi plastik.",
+    "email": "info@ilufamolding.com",
+    "phone": "+6289676181754",
+    "address": "Kawasan Industri Cikarang, Bekasi, Jawa Barat 17530",
+    "operationalHours": "Senin - Sabtu: 08.00 - 17.00 WIB"
+  },
+  "hero": {
+    "eyebrow": "SOLUSI PENGADAAN MOLDING INJEKSI PLASTIK",
+    "title": "Molding yang tepat.\nProduksi lebih siap.",
+    "subtitle": "Solusi lengkap jasa pemesanan molding import baru, pembuatan molding plastik custom sesuai desain 2D/3D, serta jual molding injeksi plastik bekas (second) berkualitas melalui sistem PO / indent terpercaya.",
+    "primaryCtaText": "Konsultasi & Minta Penawaran",
+    "secondaryCtaText": "Jelajahi Katalog",
+    "imageUrl": "https://images.unsplash.com/photo-1567789884554-0b844b597180?auto=format&fit=crop&w=1300&q=85",
+    "badges": [
+      "Jasa pemesanan molding import",
+      "Pembuatan molding plastik custom",
+      "Jual molding injeksi plastik bekas"
+    ],
+    "floatingCardTitle": "Industrial Mold Solutions",
+    "floatingCardSubtitle": "IMPORT BARU · CUSTOM · SECOND"
+  },
+  "services": [
+    {
+      "num": "01 / PROCUREMENT",
+      "title": "Jasa Pemesanan Molding Import Baru",
+      "desc": "Layanan jasa pemesanan molding import baru langsung dari workshop spesialis luar negeri sesuai standar industri. Pilihan multi-cavity, steel grade (P20, 718H, NAK80, S136), dan hot/cold runner system terkalibrasi.",
+      "ctaText": "Pesan Molding Import",
+      "type": "NEW"
+    },
+    {
+      "num": "02 / ENGINEERING",
+      "title": "Pembuatan Molding Plastik Custom",
+      "desc": "Jasa pembuatan molding plastik custom berdasarkan gambar teknik 2D/3D (CAD/STEP) atau sampel fisik produk Anda. Konsultasi ketebalan dinding, shrinkage, parting line, dan kecocokan tonase mesin injeksi.",
+      "ctaText": "Konsultasi Desain (RFQ)",
+      "type": "CUSTOM"
+    },
+    {
+      "num": "03 / SECONDARY MARKET",
+      "title": "Jual Molding Injeksi Plastik Bekas / Second",
+      "desc": "Pusat jual molding injeksi plastik bekas (second) berkualitas untuk pabrik yang ingin menghemat biaya investasi cetakan (CAPEX). Setiap unit telah diverifikasi ukuran, cavity, runner, dan kelayakan cetaknya.",
+      "ctaText": "Lihat Katalog Second",
+      "type": "USED"
+    }
+  ],
+  "process": [
+    {
+      "step": "01",
+      "title": "Kirim Kebutuhan & Gambar",
+      "desc": "Sampaikan jenis produk yang ingin dicetak, gambar teknik (2D/3D), sampel produk, atau target kapasitas produksi Anda."
+    },
+    {
+      "step": "02",
+      "title": "Konsultasi Teknis & Mesin",
+      "desc": "Tim kami menganalisis jumlah cavity, material mold, dimensi mold base, serta kompatibilitas clamping force tonase mesin Anda."
+    },
+    {
+      "step": "03",
+      "title": "Penawaran Harga & Estimasi Waktu",
+      "desc": "Pemberian penawaran resmi (RFQ) mencakup harga cetakan, biaya pengiriman/impor, timeline pengerjaan (lead time), dan skema termin pembayaran."
+    },
+    {
+      "step": "04",
+      "title": "Produksi, QC, & Pengiriman",
+      "desc": "Pengerjaan mold, uji coba cetak (sample test T0/T1), inspeksi kualitas, hingga pengiriman aman sampai ke pabrik Anda."
+    }
+  ],
+  "about": {
+    "eyebrow": "TENTANG iLUFA MOLDING",
+    "title": "Partner Terpercaya Pengadaan\nMolding Injeksi Plastik",
+    "p1": "iLUFA Molding hadir sebagai mitra strategis bagi pemilik pabrik plastik dan industri manufaktur di Indonesia yang membutuhkan jasa pemesanan molding import, pembuatan molding plastik custom, maupun tempat jual molding injeksi plastik bekas yang transparan dan terukur.",
+    "p2": "Kami tidak sekadar menjual cetakan, melainkan memberikan solusi teknis menyeluruh: mulai dari seleksi baja mold terbaik, rekayasa desain produk 2D/3D, verifikasi kelayakan molding second siap pakai, hingga pengurusan importasi molding sampai ke pabrik Anda.",
+    "imageUrl": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=85",
+    "caption": "Procurement with Precision & Purpose",
+    "points": [
+      "Jasa pemesanan molding import baru bergaransi spesifikasi",
+      "Pembuatan molding plastik custom presisi sesuai mesin Anda",
+      "Jual molding injeksi plastik bekas yang sudah diinspeksi",
+      "Layanan PO / Indent resmi dengan kontrak & QC transparan"
+    ]
+  },
+  "faqs": [
+    {
+      "q": "Bagaimana sistem pembayaran untuk pemesanan molding baru / custom?",
+      "a": "Pemesanan molding baru atau custom menggunakan sistem termin (PO/Indent), umumnya Down Payment (DP) saat kontrak disepakati, termin setelah video trial cetak (T1) disetujui, dan pelunasan sebelum pengiriman ke pabrik Anda."
+    },
+    {
+      "q": "Berapa lama estimasi waktu pembuatan dan pengiriman molding import?",
+      "a": "Waktu pengerjaan (lead time) umumnya berkisar 25–45 hari kerja tergantung kompleksitas desain, ukuran, dan jumlah cavity. Estimasi pengiriman dikonfirmasi secara transparan saat penawaran."
+    },
+    {
+      "q": "Bagaimana memastikan molding second / bekas masih layak pakai?",
+      "a": "Setiap molding second di katalog kami telah melewati pemeriksaan fisik awal: kondisi core & cavity, keausan slider/pin ejector, serta kelengkapan runner system. Calon pembeli juga dipersilakan melakukan inspeksi fisik langsung."
+    },
+    {
+      "q": "Jika saya hanya punya sampel produk fisik tanpa file 3D, apakah bisa?",
+      "a": "Bisa. Kami dapat membantu proses reverse engineering melalui 3D scanning produk dan pembuatan gambar kerja 3D CAD untuk disetujui sebelum mold dibuat."
+    },
+    {
+      "q": "Apakah iLUFA Molding bisa mencocokkan molding dengan tonase mesin kami?",
+      "a": "Ya, Anda cukup memberikan informasi tonase mesin injeksi (misal: 120T, 250T, 450T) dan jarak tie bar. Tim kami akan memastikan dimensi mold base muat dan kapasitas tembak (shot weight) sesuai."
+    }
+  ]
+}

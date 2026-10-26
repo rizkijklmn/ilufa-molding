@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
+import { applyThemeVariables } from "../utils/themeContrast.js";
 import {
   LayoutDashboard,
   Layers,
@@ -843,6 +844,36 @@ async function resetCMS() {
   }
 }
 
+async function resetDemoCatalog() {
+  if (
+    !confirm(
+      "PERHATIAN: Apakah Anda yakin ingin memulihkan seluruh data contoh bawaan (molds, produk cetak, dan kategori)?\n\nCatatan: Data yang Anda buat sendiri saat ini akan ditimpa dengan data contoh."
+    )
+  )
+    return;
+  loading.value = true;
+  try {
+    const res = await fetch(`${props.api}/admin/reset-data`, {
+      method: "POST",
+      headers: authHeaders(),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Gagal memulihkan data contoh.");
+    showToast(data.message || "Data contoh berhasil dipulihkan!");
+    await Promise.all([
+      fetchCategories(),
+      fetchMolds(),
+      fetchProducts(),
+      fetchStats(),
+    ]);
+    emit("data-updated");
+  } catch (err) {
+    showToast(err.message, "error");
+  } finally {
+    loading.value = false;
+  }
+}
+
 function ensureThemeColors() {
   if (!cms.value.general) cms.value.general = {};
   if (!cms.value.general.themeColors) {
@@ -859,8 +890,18 @@ function applyColorPreset(primary, secondary, gold) {
   cms.value.general.themeColors.primaryNavy = primary;
   cms.value.general.themeColors.secondaryNavy = secondary;
   cms.value.general.themeColors.accentGold = gold;
+  applyThemeVariables(cms.value.general.themeColors, document.documentElement);
   showToast("Palet tema diterapkan, klik Simpan untuk memperbarui website.");
 }
+
+watch(
+  () => cms.value?.general?.themeColors,
+  (colors) => {
+    if (!colors) return;
+    applyThemeVariables(colors, document.documentElement);
+  },
+  { deep: true }
+);
 
 // --- FAQ Actions ---
 function addFaqItem() {
@@ -1308,6 +1349,12 @@ onMounted(() => {
 
           <div class="categories-admin-grid">
             <div
+              v-if="!categories.length"
+              style="grid-column: 1 / -1; text-align: center; padding: 48px 16px; background: white; border: 1px dashed #cbd5e1; border-radius: 8px; color: #64748b;"
+            >
+              Belum ada kategori yang tersimpan. Klik "+ Tambah Kategori Baru" untuk membuat baru.
+            </div>
+            <div
               v-for="cat in categories"
               :key="cat.id"
               class="category-admin-card"
@@ -1549,6 +1596,11 @@ onMounted(() => {
                     </div>
                   </td>
                 </tr>
+                <tr v-if="!filteredMolds.length">
+                  <td colspan="7" style="text-align: center; padding: 48px 16px; color: #64748b;">
+                    Belum ada data molding yang tersedia. Klik "+ Tambah Molding Baru" untuk membuat baru.
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -1587,6 +1639,12 @@ onMounted(() => {
           </div>
 
           <div class="products-grid">
+            <div
+              v-if="!filteredProducts.length"
+              style="grid-column: 1 / -1; text-align: center; padding: 48px 16px; background: white; border: 1px dashed #cbd5e1; border-radius: 8px; color: #64748b;"
+            >
+              Belum ada contoh produk hasil cetakan. Klik "+ Tambah Contoh Produk" untuk membuat baru.
+            </div>
             <div
               v-for="prod in filteredProducts"
               :key="prod.id"
@@ -2341,9 +2399,12 @@ onMounted(() => {
               </div>
             </div>
 
-            <div class="cms-save-bar">
-              <button class="btn btn-outline-danger" @click="resetCMS">
-                <RotateCcw :size="15" /> Reset ke Default
+            <div class="cms-save-bar" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: flex-end;">
+              <button class="btn btn-outline-danger" @click="resetCMS" title="Kembalikan semua teks CMS ke standar">
+                <RotateCcw :size="15" /> Reset Teks CMS
+              </button>
+              <button class="btn btn-outline-danger" @click="resetDemoCatalog" title="Kembalikan data katalog sample jika setelah pengetesan ingin memulihkannya">
+                <RotateCcw :size="15" /> Pulihkan Data Katalog Contoh
               </button>
               <button class="btn btn-gold" @click="saveCMS" :disabled="loading">
                 <Save :size="16" />
@@ -2519,6 +2580,11 @@ onMounted(() => {
                         <Trash2 :size="15" />
                       </button>
                     </div>
+                  </td>
+                </tr>
+                <tr v-if="!filteredMolds.length">
+                  <td colspan="7" style="text-align: center; padding: 48px 16px; color: #64748b;">
+                    Belum ada data molding yang tersedia. Klik "+ Tambah Molding Baru" untuk membuat baru.
                   </td>
                 </tr>
               </tbody>
@@ -4300,16 +4366,24 @@ onMounted(() => {
 }
 .preview-img-box {
   margin-top: 10px;
-  height: 140px;
+  height: auto;
+  max-height: 220px;
   border: 1px solid #e1e7eb;
-  border-radius: 2px;
+  border-radius: 6px;
   overflow: hidden;
-  max-width: 320px;
+  max-width: 380px;
+  background: #081624;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .preview-img-box img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  max-height: 200px;
+  object-fit: contain;
+  display: block;
 }
 .thumb-preview {
   margin-top: 8px;

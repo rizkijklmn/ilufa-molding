@@ -286,10 +286,16 @@ let seededOnce = false
 export async function ensureFirestoreSeeded() {
   if (seededOnce || !isFirestoreConfigured()) return
   try {
+    const seedMarker = await fsGetDoc('site_settings', 'system_seed').catch(() => null)
+    if (seedMarker && seedMarker.seeded) {
+      seededOnce = true
+      return
+    }
+
     const [cats, molds, prods] = await Promise.all([
-      fsListCollection('categories'),
-      fsListCollection('molds'),
-      fsListCollection('molded_products')
+      fsListCollection('categories').catch(() => []),
+      fsListCollection('molds').catch(() => []),
+      fsListCollection('molded_products').catch(() => [])
     ])
 
     if (cats.length === 0) {
@@ -319,10 +325,15 @@ export async function ensureFirestoreSeeded() {
       }
     }
 
-    const cmsDoc = await fsGetDoc('site_settings', 'cms')
+    const cmsDoc = await fsGetDoc('site_settings', 'cms').catch(() => null)
     if (!cmsDoc) {
       await fsSetDoc('site_settings', 'cms', DEFAULT_CMS)
     }
+
+    await fsSetDoc('site_settings', 'system_seed', {
+      seeded: true,
+      seededAt: new Date().toISOString()
+    }).catch(() => null)
 
     seededOnce = true
   } catch (err) {
@@ -330,5 +341,34 @@ export async function ensureFirestoreSeeded() {
       console.warn('Firestore auto-seed warning:', err.message)
     }
   }
+}
+
+export async function resetFirestoreToDefaults() {
+  if (!isFirestoreConfigured()) return
+  // Delete existing
+  const [cats, molds, prods] = await Promise.all([
+    fsListCollection('categories').catch(() => []),
+    fsListCollection('molds').catch(() => []),
+    fsListCollection('molded_products').catch(() => [])
+  ])
+  for (const c of cats) await fsDeleteDoc('categories', c.id).catch(() => null)
+  for (const m of molds) await fsDeleteDoc('molds', m.id).catch(() => null)
+  for (const p of prods) await fsDeleteDoc('molded_products', p.id).catch(() => null)
+
+  // Re-seed
+  for (const cat of DEFAULT_CATEGORIES) {
+    await fsSetDoc('categories', cat.id, { ...cat, createdAt: new Date().toISOString() })
+  }
+  for (const mold of DEFAULT_MOLDS) {
+    await fsSetDoc('molds', mold.id, { ...mold, createdAt: new Date().toISOString() })
+  }
+  for (const prod of DEFAULT_MOLDED_PRODUCTS) {
+    await fsSetDoc('molded_products', prod.id, { ...prod, createdAt: new Date().toISOString() })
+  }
+  await fsSetDoc('site_settings', 'system_seed', {
+    seeded: true,
+    seededAt: new Date().toISOString()
+  }).catch(() => null)
+  seededOnce = true
 }
 

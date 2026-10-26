@@ -1,0 +1,86 @@
+[
+  {
+    "id": "prod_hanger_01",
+    "name": "Gantungan Baju Plastik Premium",
+    "category": "Gantungan & Cantolan",
+    "description": "Produk gantungan baju anti slip dengan konstruksi kokoh dan finishing halus, cocok untuk retail pakaian.",
+    "detailContent": "Gantungan baju plastik dewasa dengan desain bahu melebar dan pengait samping untuk tali pakaian. Dirancang untuk diproduksi massal menggunakan resin PP Copolymer atau HIPS. Struktur rusuk (rib) diperkuat agar tidak mudah patah saat menahan pakaian berat seperti jaket atau jas.",
+    "imageUrl": "https://images.unsplash.com/photo-1582738411706-bfc8e691d1c2?auto=format&fit=crop&w=800&q=80",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=800&q=80"
+    ],
+    "weightEst": "42 gram",
+    "dimensions": "42 x 20 x 0.8 cm",
+    "moldInfo": "Mold 4-Cavity Hot Runner",
+    "materialType": "PP / HIPS / ABS",
+    "cycleTime": "18 - 22 detik",
+    "minMachineTonnage": "250 - 320 Ton",
+    "featured": true,
+    "isVisible": true
+  },
+  {
+    "id": "prod_cap_02",
+    "name": "Tutup Botol Ulir 28mm (HDPE/PP)",
+    "category": "Packaging",
+    "description": "Tutup botol air mineral / minuman bersegel tamper-evident ring dengan ulir presisi bebas bocor.",
+    "detailContent": "Produk closure/tutup botol leher standar 28mm PCO1810 / 1881 lengkap dengan ring segel keamanan. Cetakan menggunakan baja S136 hardened dengan sistem stripper plate dan hot runner tanpa runner waste, menghasilkan siklus produksi sangat cepat dan konsisten.",
+    "imageUrl": "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=800&q=80",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80"
+    ],
+    "weightEst": "2.8 gram",
+    "dimensions": "Dia 28 mm, H 15 mm",
+    "moldInfo": "Mold 16 / 32-Cavity High Speed",
+    "materialType": "HDPE / PP Food Grade",
+    "cycleTime": "6 - 9 detik",
+    "minMachineTonnage": "160 - 220 Ton",
+    "featured": true,
+    "isVisible": true
+  },
+  {
+    "id": "prod_container_03",
+    "name": "Kontainer Penyimpanan Makanan 1000ml",
+    "category": "Peralatan Rumah Tangga",
+    "description": "Thinwall food container berbahan PP food-grade microwave & freezer safe, transparan dan kedap udara.",
+    "detailContent": "Wadah makanan dünnwand (thinwall) ketebalan dinding 0.55 mm dengan presisi bibir penutup snap-fit anti tumpah. Cetakan dilengkapi sirkulasi air pendingin intensif dan sisipan Beryllium Copper untuk mempercepat pelepasan panas pada siklus high-speed.",
+    "imageUrl": "https://images.unsplash.com/photo-1590736969955-71cc94801759?auto=format&fit=crop&w=800&q=80",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&w=800&q=80"
+    ],
+    "weightEst": "35 gram",
+    "dimensions": "17 x 12 x 7 cm",
+    "moldInfo": "Mold 2-Cavity Beryllium Copper Inserts",
+    "materialType": "PP Random Copolymer (High MFI)",
+    "cycleTime": "7 - 10 detik",
+    "minMachineTonnage": "200 - 280 Ton High Speed",
+    "featured": true,
+    "isVisible": true
+  },
+  {
+    "id": "prod_bracket_04",
+    "name": "Bracket & Spacer Komponen Industri",
+    "category": "Komponen Industri",
+    "description": "Part plastik engineering (PA66 / POM) berkekuatan mekanik tinggi untuk dudukan dinamo dan part mesin.",
+    "detailContent": "Komponen fungsional teknik dengan toleransi dimensi ketat (±0.05 mm) dan ketahanan panas serta gesekan tinggi. Menggunakan mekanisme side-core slider hidrolik/mekanik untuk membentuk lubang pengunci samping secara otomatis saat injeksi.",
+    "imageUrl": "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=800&q=80",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1567789884554-0b844b597180?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1537462715879-360eeb61a0ad?auto=format&fit=crop&w=800&q=80"
+    ],
+    "weightEst": "68 gram",
+    "dimensions": "8 x 6 x 3 cm",
+    "moldInfo": "Mold 2-Cavity Slider System",
+    "materialType": "Nylon PA66 + 30% GF / POM",
+    "cycleTime": "22 - 28 detik",
+    "minMachineTonnage": "120 - 160 Ton",
+    "featured": false,
+    "isVisible": true
+  }
+]

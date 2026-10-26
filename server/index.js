@@ -15,6 +15,7 @@ import {
 import {
   isFirestoreConfigured,
   ensureFirestoreSeeded,
+  resetFirestoreToDefaults,
   fsListCollection,
   fsGetDoc,
   fsSetDoc,
@@ -48,6 +49,7 @@ const PRODUCTS_FILE = path.join(dataDir, 'molded-products.json')
 const CATEGORIES_FILE = path.join(dataDir, 'categories.json')
 const MOLDS_FILE = path.join(dataDir, 'molds.json')
 const INQUIRIES_FILE = path.join(dataDir, 'inquiries.json')
+const SYSTEM_SEED_FILE = path.join(dataDir, 'system_seed.json')
 
 function readJsonFile(filePath, defaultValue) {
   try {
@@ -68,6 +70,33 @@ function writeJsonFile(filePath, data) {
     console.error(`Error writing ${filePath}:`, err.message)
   }
 }
+
+// First-time seeding helper: initializes files if they don't exist yet,
+// but never overwrites once system is seeded.
+function ensureInitialDataFiles() {
+  try {
+    const seedMarker = readJsonFile(SYSTEM_SEED_FILE, null)
+    if (seedMarker && seedMarker.seeded) return
+
+    if (!fs.existsSync(CATEGORIES_FILE)) {
+      writeJsonFile(CATEGORIES_FILE, DEFAULT_CATEGORIES)
+    }
+    if (!fs.existsSync(MOLDS_FILE)) {
+      writeJsonFile(MOLDS_FILE, DEFAULT_MOLDS)
+    }
+    if (!fs.existsSync(PRODUCTS_FILE)) {
+      writeJsonFile(PRODUCTS_FILE, DEFAULT_MOLDED_PRODUCTS)
+    }
+    if (!fs.existsSync(CMS_FILE)) {
+      writeJsonFile(CMS_FILE, DEFAULT_CMS)
+    }
+    writeJsonFile(SYSTEM_SEED_FILE, { seeded: true, seededAt: new Date().toISOString() })
+  } catch (err) {
+    console.warn('Initial data seeding warning:', err.message)
+  }
+}
+
+ensureInitialDataFiles()
 
 function parseGallery(raw) {
   if (Array.isArray(raw)) return raw.filter(Boolean).slice(0, 3)
@@ -183,50 +212,60 @@ async function ensureDatabaseSchema() {
     await prisma.$executeRawUnsafe(`ALTER TABLE "MoldedProduct" ADD COLUMN IF NOT EXISTS "minMachineTonnage" TEXT;`)
     await prisma.$executeRawUnsafe(`ALTER TABLE "MoldedProduct" ADD COLUMN IF NOT EXISTS "isVisible" BOOLEAN NOT NULL DEFAULT true;`)
 
-    // Seed initial Categories if empty
-    const catCount = await prisma.category.count()
-    if (catCount === 0) {
-      for (const cat of DEFAULT_CATEGORIES) {
-        await prisma.category.create({
-          data: {
-            id: cat.id,
-            name: cat.name,
-            slug: cat.slug,
-            description: cat.description,
-            detailContent: cat.detailContent,
-            imageUrl: cat.imageUrl,
-            galleryImages: serializeGallery(cat.galleryImages),
-            isVisible: cat.isVisible,
-            sortOrder: cat.sortOrder
-          }
-        }).catch(() => null)
+    // Check if Prisma was already seeded once
+    const seedCheck = await prisma.siteSetting.findUnique({ where: { key: 'system_seeded' } }).catch(() => null)
+    if (!seedCheck || seedCheck.value !== 'true') {
+      // Seed initial Categories if empty
+      const catCount = await prisma.category.count()
+      if (catCount === 0) {
+        for (const cat of DEFAULT_CATEGORIES) {
+          await prisma.category.create({
+            data: {
+              id: cat.id,
+              name: cat.name,
+              slug: cat.slug,
+              description: cat.description,
+              detailContent: cat.detailContent,
+              imageUrl: cat.imageUrl,
+              galleryImages: serializeGallery(cat.galleryImages),
+              isVisible: cat.isVisible,
+              sortOrder: cat.sortOrder
+            }
+          }).catch(() => null)
+        }
       }
-    }
 
-    // Seed initial MoldedProducts if empty
-    const prodCount = await prisma.moldedProduct.count()
-    if (prodCount === 0) {
-      for (const prod of DEFAULT_MOLDED_PRODUCTS) {
-        await prisma.moldedProduct.create({
-          data: {
-            id: prod.id,
-            name: prod.name,
-            category: prod.category,
-            description: prod.description,
-            detailContent: prod.detailContent,
-            imageUrl: prod.imageUrl,
-            galleryImages: serializeGallery(prod.galleryImages),
-            weightEst: prod.weightEst,
-            dimensions: prod.dimensions,
-            moldInfo: prod.moldInfo,
-            materialType: prod.materialType,
-            cycleTime: prod.cycleTime,
-            minMachineTonnage: prod.minMachineTonnage,
-            featured: prod.featured,
-            isVisible: prod.isVisible
-          }
-        }).catch(() => null)
+      // Seed initial MoldedProducts if empty
+      const prodCount = await prisma.moldedProduct.count()
+      if (prodCount === 0) {
+        for (const prod of DEFAULT_MOLDED_PRODUCTS) {
+          await prisma.moldedProduct.create({
+            data: {
+              id: prod.id,
+              name: prod.name,
+              category: prod.category,
+              description: prod.description,
+              detailContent: prod.detailContent,
+              imageUrl: prod.imageUrl,
+              galleryImages: serializeGallery(prod.galleryImages),
+              weightEst: prod.weightEst,
+              dimensions: prod.dimensions,
+              moldInfo: prod.moldInfo,
+              materialType: prod.materialType,
+              cycleTime: prod.cycleTime,
+              minMachineTonnage: prod.minMachineTonnage,
+              featured: prod.featured,
+              isVisible: prod.isVisible
+            }
+          }).catch(() => null)
+        }
       }
+
+      await prisma.siteSetting.upsert({
+        where: { key: 'system_seeded' },
+        update: { value: 'true' },
+        create: { key: 'system_seeded', value: 'true' }
+      }).catch(() => null)
     }
   } catch (err) {
     // Silent fallback when DB is unreachable
@@ -332,7 +371,7 @@ async function getAllCategories() {
     try {
       await ensureFirestoreSeeded()
       const docs = await fsListCollection('categories')
-      if (docs.length > 0) {
+      if (Array.isArray(docs)) {
         return docs
           .map(formatCategoryRecord)
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
@@ -344,11 +383,11 @@ async function getAllCategories() {
       const cats = await prisma.category.findMany({
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }]
       })
-      if (cats.length > 0) return cats.map(formatCategoryRecord)
+      if (Array.isArray(cats)) return cats.map(formatCategoryRecord)
     } catch {}
   }
   const fileCats = readJsonFile(CATEGORIES_FILE, null)
-  if (fileCats && fileCats.length > 0) return fileCats.map(formatCategoryRecord)
+  if (Array.isArray(fileCats)) return fileCats.map(formatCategoryRecord)
   return DEFAULT_CATEGORIES.map(formatCategoryRecord)
 }
 
@@ -538,22 +577,30 @@ app.patch('/api/categories/:id/visibility', requireAdmin, asyncHandler(async (re
 
 app.delete('/api/categories/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { id } = req.params
+
   if (isFirestoreConfigured()) {
     try {
       await fsDeleteDoc('categories', id)
-      return res.json({ ok: true, message: 'Kategori berhasil dihapus.' })
+    } catch (err) {
+      console.warn('Firestore delete category error:', err.message)
+    }
+  }
+
+  if (prisma) {
+    try {
+      await prisma.category.delete({ where: { id } }).catch(() => null)
     } catch {}
   }
+
   try {
-    if (!prisma) throw new Error('No Prisma')
-    await prisma.category.delete({ where: { id } })
-    return res.json({ ok: true, message: 'Kategori berhasil dihapus.' })
-  } catch {
-    const current = await getAllCategories()
+    const current = readJsonFile(CATEGORIES_FILE, null) || (await getAllCategories())
     const filtered = current.filter(c => c.id !== id)
     writeJsonFile(CATEGORIES_FILE, filtered)
-    return res.json({ ok: true, message: 'Kategori berhasil dihapus.' })
+  } catch (err) {
+    console.error('Local JSON delete category error:', err.message)
   }
+
+  return res.json({ ok: true, message: 'Kategori berhasil dihapus.' })
 }))
 
 // --- Molds Catalog API (Firestore + PostgreSQL + JSON Fallback) ---
@@ -562,7 +609,7 @@ async function getAllMolds() {
     try {
       await ensureFirestoreSeeded()
       const docs = await fsListCollection('molds')
-      if (docs.length > 0) {
+      if (Array.isArray(docs)) {
         return docs
           .map(formatMoldRecord)
           .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)))
@@ -574,11 +621,11 @@ async function getAllMolds() {
       const molds = await prisma.mold.findMany({
         orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }]
       })
-      if (molds.length > 0) return molds.map(formatMoldRecord)
+      if (Array.isArray(molds)) return molds.map(formatMoldRecord)
     } catch {}
   }
   const fileMolds = readJsonFile(MOLDS_FILE, null)
-  if (fileMolds && fileMolds.length > 0) return fileMolds.map(formatMoldRecord)
+  if (Array.isArray(fileMolds)) return fileMolds.map(formatMoldRecord)
   return DEFAULT_MOLDS.map(formatMoldRecord)
 }
 
@@ -796,22 +843,30 @@ app.patch('/api/molds/:id/visibility', requireAdmin, asyncHandler(async (req, re
 
 app.delete('/api/molds/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { id } = req.params
+
   if (isFirestoreConfigured()) {
     try {
       await fsDeleteDoc('molds', id)
-      return res.json({ ok: true, message: 'Molding berhasil dihapus.' })
+    } catch (err) {
+      console.warn('Firestore delete mold error:', err.message)
+    }
+  }
+
+  if (prisma) {
+    try {
+      await prisma.mold.delete({ where: { id } }).catch(() => null)
     } catch {}
   }
+
   try {
-    if (!prisma) throw new Error('No Prisma')
-    await prisma.mold.delete({ where: { id } })
-    return res.json({ ok: true, message: 'Molding berhasil dihapus.' })
-  } catch {
-    const current = await getAllMolds()
+    const current = readJsonFile(MOLDS_FILE, null) || (await getAllMolds())
     const filtered = current.filter(m => m.id !== id)
     writeJsonFile(MOLDS_FILE, filtered)
-    return res.json({ ok: true, message: 'Molding berhasil dihapus.' })
+  } catch (err) {
+    console.error('Local JSON delete mold error:', err.message)
   }
+
+  return res.json({ ok: true, message: 'Molding berhasil dihapus.' })
 }))
 
 // --- Molded Products (Katalog Hasil Cetakan Plastik) API ---
@@ -820,7 +875,7 @@ async function getAllProducts() {
     try {
       await ensureFirestoreSeeded()
       const docs = await fsListCollection('molded_products')
-      if (docs.length > 0) {
+      if (Array.isArray(docs)) {
         return docs
           .map(formatProductRecord)
           .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)))
@@ -830,11 +885,11 @@ async function getAllProducts() {
   if (prisma) {
     try {
       const products = await prisma.moldedProduct.findMany({ orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }] })
-      if (products.length > 0) return products.map(formatProductRecord)
+      if (Array.isArray(products)) return products.map(formatProductRecord)
     } catch {}
   }
   const fileProducts = readJsonFile(PRODUCTS_FILE, null)
-  if (fileProducts && fileProducts.length > 0) return fileProducts.map(formatProductRecord)
+  if (Array.isArray(fileProducts)) return fileProducts.map(formatProductRecord)
   return DEFAULT_MOLDED_PRODUCTS.map(formatProductRecord)
 }
 
@@ -1012,22 +1067,30 @@ app.patch('/api/molded-products/:id/visibility', requireAdmin, asyncHandler(asyn
 
 app.delete('/api/molded-products/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { id } = req.params
+
   if (isFirestoreConfigured()) {
     try {
       await fsDeleteDoc('molded_products', id)
-      return res.json({ ok: true, message: 'Produk berhasil dihapus.' })
+    } catch (err) {
+      console.warn('Firestore delete product error:', err.message)
+    }
+  }
+
+  if (prisma) {
+    try {
+      await prisma.moldedProduct.delete({ where: { id } }).catch(() => null)
     } catch {}
   }
+
   try {
-    if (!prisma) throw new Error('No Prisma')
-    await prisma.moldedProduct.delete({ where: { id } })
-    return res.json({ ok: true, message: 'Produk berhasil dihapus.' })
-  } catch {
-    const current = await getAllProducts()
+    const current = readJsonFile(PRODUCTS_FILE, null) || (await getAllProducts())
     const filtered = current.filter(p => p.id !== id)
     writeJsonFile(PRODUCTS_FILE, filtered)
-    return res.json({ ok: true, message: 'Produk berhasil dihapus.' })
+  } catch (err) {
+    console.error('Local JSON delete product error:', err.message)
   }
+
+  return res.json({ ok: true, message: 'Produk berhasil dihapus.' })
 }))
 
 // --- Submit & Manage RFQ Inquiries ---
@@ -1150,21 +1213,29 @@ app.patch('/api/inquiries/:id', requireAdmin, asyncHandler(async (req, res) => {
 
 app.delete('/api/inquiries/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { id } = req.params
+
   if (isFirestoreConfigured()) {
     try {
       await fsDeleteDoc('inquiries', id)
-      return res.json({ ok: true, message: 'Penawaran berhasil dihapus.' })
+    } catch (err) {
+      console.warn('Firestore delete inquiry error:', err.message)
+    }
+  }
+
+  if (prisma) {
+    try {
+      await prisma.inquiry.delete({ where: { id } }).catch(() => null)
     } catch {}
   }
+
   try {
-    if (!prisma) throw new Error('No Prisma')
-    await prisma.inquiry.delete({ where: { id } })
-    return res.json({ ok: true, message: 'Penawaran berhasil dihapus.' })
-  } catch {
     const current = readJsonFile(INQUIRIES_FILE, [])
     writeJsonFile(INQUIRIES_FILE, current.filter(i => i.id !== id))
-    return res.json({ ok: true, message: 'Penawaran berhasil dihapus.' })
+  } catch (err) {
+    console.error('Local JSON delete inquiry error:', err.message)
   }
+
+  return res.json({ ok: true, message: 'Penawaran berhasil dihapus.' })
 }))
 
 // --- Admin Auth & Stats ---
@@ -1260,6 +1331,72 @@ app.post('/api/cms/reset', requireAdmin, asyncHandler(async (_req, res) => {
   }
   writeJsonFile(CMS_FILE, DEFAULT_CMS)
   res.json({ ok: true, message: 'Konten website berhasil direset ke standar.', data: DEFAULT_CMS })
+}))
+
+// Restore initial sample demo catalog (categories, molds, molded products) only when explicitly triggered by admin
+app.post('/api/admin/reset-data', requireAdmin, asyncHandler(async (_req, res) => {
+  if (isFirestoreConfigured()) {
+    try {
+      await resetFirestoreToDefaults()
+    } catch (err) {
+      console.warn('Firestore reset error:', err.message)
+    }
+  }
+
+  if (prisma) {
+    try {
+      await prisma.moldedProduct.deleteMany().catch(() => null)
+      await prisma.mold.deleteMany().catch(() => null)
+      await prisma.category.deleteMany().catch(() => null)
+
+      for (const cat of DEFAULT_CATEGORIES) {
+        await prisma.category.create({
+          data: {
+            id: cat.id,
+            name: cat.name,
+            slug: cat.slug,
+            description: cat.description,
+            detailContent: cat.detailContent,
+            imageUrl: cat.imageUrl,
+            galleryImages: serializeGallery(cat.galleryImages),
+            isVisible: cat.isVisible,
+            sortOrder: cat.sortOrder
+          }
+        }).catch(() => null)
+      }
+
+      for (const prod of DEFAULT_MOLDED_PRODUCTS) {
+        await prisma.moldedProduct.create({
+          data: {
+            id: prod.id,
+            name: prod.name,
+            category: prod.category,
+            description: prod.description,
+            detailContent: prod.detailContent,
+            imageUrl: prod.imageUrl,
+            galleryImages: serializeGallery(prod.galleryImages),
+            weightEst: prod.weightEst,
+            dimensions: prod.dimensions,
+            moldInfo: prod.moldInfo,
+            materialType: prod.materialType,
+            cycleTime: prod.cycleTime,
+            minMachineTonnage: prod.minMachineTonnage,
+            featured: prod.featured,
+            isVisible: prod.isVisible
+          }
+        }).catch(() => null)
+      }
+    } catch (err) {
+      console.warn('Prisma reset error:', err.message)
+    }
+  }
+
+  writeJsonFile(CATEGORIES_FILE, DEFAULT_CATEGORIES)
+  writeJsonFile(MOLDS_FILE, DEFAULT_MOLDS)
+  writeJsonFile(PRODUCTS_FILE, DEFAULT_MOLDED_PRODUCTS)
+  writeJsonFile(SYSTEM_SEED_FILE, { seeded: true, resetAt: new Date().toISOString() })
+
+  res.json({ ok: true, message: 'Data contoh (kategori, molds, dan produk cetak) berhasil dipulihkan.' })
 }))
 
 // --- Image Upload (Supports Serverless / Firestore Data URL + Local File Storage) ---

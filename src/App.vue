@@ -23,6 +23,7 @@ import MoldDetailModal from "./components/MoldDetailModal.vue";
 import ProductDetailModal from "./components/ProductDetailModal.vue";
 import LanguageSelector from "./components/LanguageSelector.vue";
 import { LOCALES } from "./locales.js";
+import { applyThemeVariables } from "./utils/themeContrast.js";
 
 const API = import.meta.env.VITE_API_URL || "/api";
 const WA_DEFAULT = import.meta.env.VITE_WHATSAPP_NUMBER || "6289676181754";
@@ -237,18 +238,11 @@ watch([filterType, moldCategoryFilter, query], () => {
   catalogPage.value = 1;
 });
 
-// Real-time CSS Variables Injection for Theme Customization
+// Real-time CSS Variables Injection with Automatic Contrast Adjustment
 function applyThemeColors() {
   const colors = cms.value?.general?.themeColors;
   if (!colors) return;
-  const root = document.documentElement;
-  if (colors.primaryNavy) root.style.setProperty("--navy", colors.primaryNavy);
-  if (colors.secondaryNavy)
-    root.style.setProperty("--navy2", colors.secondaryNavy);
-  if (colors.accentGold) {
-    root.style.setProperty("--gold", colors.accentGold);
-    root.style.setProperty("--gold-light", colors.accentGold + "20");
-  }
+  applyThemeVariables(colors, document.documentElement);
 }
 
 watch(() => cms.value?.general?.themeColors, applyThemeColors, {
@@ -825,26 +819,32 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <div class="hero-visual">
-              <img
-                :src="cms.hero.imageUrl"
-                alt="Jasa Pemesanan Molding Import, Pembuatan Molding Plastik Custom & Jual Molding Injeksi Plastik Bekas - iLUFA Molding"
-              />
-              <div class="visual-shade"></div>
-              <div class="hero-label">
-                <span class="label-icon"><Factory :size="22" /></span>
-                <div>
-                  <b>{{
-                    cms.hero.floatingCardTitle || "Industrial Mold Solutions"
-                  }}</b>
-                  <small>{{
-                    cms.hero.floatingCardSubtitle || "NEW · CUSTOM · SECOND"
-                  }}</small>
-                </div>
+            <div class="hero-visual-col">
+              <div class="hero-visual">
+                <img
+                  :src="cms.hero.imageUrl"
+                  class="hero-visual-img"
+                  style="max-width: 100%; max-height: 480px; width: 100%; height: auto; object-fit: contain !important; display: block; border-radius: 8px;"
+                  alt="Jasa Pemesanan Molding Import, Pembuatan Molding Plastik Custom & Jual Molding Injeksi Plastik Bekas - iLUFA Molding"
+                />
               </div>
-              <div class="visual-number">
-                <b>01</b>
-                <span>ENGINEERING<br />YOUR NEXT STEP</span>
+
+              <div class="hero-visual-footer">
+                <div class="hero-label">
+                  <span class="label-icon"><Factory :size="20" /></span>
+                  <div>
+                    <b>{{
+                      cms.hero.floatingCardTitle || "Industrial Mold Solutions"
+                    }}</b>
+                    <small>{{
+                      cms.hero.floatingCardSubtitle || "NEW · CUSTOM · SECOND"
+                    }}</small>
+                  </div>
+                </div>
+                <div class="visual-number">
+                  <b>01</b>
+                  <span>ENGINEERING<br />YOUR NEXT STEP</span>
+                </div>
               </div>
             </div>
 
@@ -923,7 +923,6 @@ onUnmounted(() => {
                 v-for="(srv, sIdx) in cms.services"
                 :key="sIdx"
                 class="service-card"
-                :class="{ 'featured-service': srv.type === 'CUSTOM' }"
               >
                 <div class="service-icon">
                   <Boxes v-if="srv.type === 'NEW'" />
@@ -1495,13 +1494,17 @@ onUnmounted(() => {
         <!-- TENTANG KAMI -->
         <section class="about-section" id="tentang">
           <div class="container about-layout">
-            <div class="about-visual">
-              <img
-                :src="cms.about.imageUrl"
-                alt="Tim teknis iLUFA Molding"
-                loading="lazy"
-              />
-              <div class="about-caption">
+            <div class="about-visual-col">
+              <div class="about-visual">
+                <img
+                  :src="cms.about.imageUrl"
+                  class="about-visual-img"
+                  style="max-width: 100%; max-height: 480px; width: 100%; height: auto; object-fit: contain !important; display: block; border-radius: 8px;"
+                  alt="Tim teknis iLUFA Molding"
+                  loading="lazy"
+                />
+              </div>
+              <div class="about-caption" v-if="cms.about.caption">
                 <span>iLUFA</span>
                 <b>{{ cms.about.caption }}</b>
               </div>
@@ -1558,7 +1561,7 @@ onUnmounted(() => {
               <span
                 class="brand-name notranslate"
                 translate="no"
-                style="color: #ffffff"
+                style="color: var(--navy-text, #ffffff)"
                 >{{ cms.general.siteName || "iLUFA MOLDING" }}</span
               >
               <small class="brand-tagline">{{

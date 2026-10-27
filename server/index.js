@@ -1,10 +1,23 @@
-import 'dotenv/config'
-import express from 'express'
-import cors from 'cors'
-import { PrismaClient } from '@prisma/client'
+import dotenv from 'dotenv'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import fs from 'node:fs'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+// Load environment variables reliably from all possible cPanel locations
+dotenv.config()
+dotenv.config({ path: path.resolve(__dirname, '../.env') })
+if (fs.existsSync('/home/ilufamol/app/.env')) {
+  dotenv.config({ path: '/home/ilufamol/app/.env', override: true })
+}
+if (fs.existsSync('/home/ilufamol/public_html/.env')) {
+  dotenv.config({ path: '/home/ilufamol/public_html/.env', override: true })
+}
+
+import express from 'express'
+import cors from 'cors'
+import { PrismaClient } from '@prisma/client'
 import crypto from 'node:crypto'
 import {
   DEFAULT_CMS,
@@ -26,7 +39,6 @@ const isVercel = Boolean(process.env.VERCEL)
 const prisma = process.env.DATABASE_URL ? new PrismaClient() : null
 const app = express()
 const PORT = process.env.PORT || 3000
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dataDir = isVercel ? '/tmp/ilufa-data' : path.resolve(__dirname, 'data')
 const uploadDir = isVercel ? '/tmp/ilufa-uploads' : path.resolve(__dirname, '../public/uploads')
 
@@ -1534,7 +1546,7 @@ app.post('/api/admin/login', (req, res) => {
   const { password } = req.body || {}
   const validPass = process.env.ADMIN_PASSWORD || 'admin123'
   if (!password || password !== validPass) {
-    return res.status(401).json({ error: 'Password admin salah. Default: admin123' })
+    return res.status(401).json({ error: 'Password admin salah. Silakan coba lagi.' })
   }
   const token = createStatelessAdminToken()
   activeTokens.add(token)

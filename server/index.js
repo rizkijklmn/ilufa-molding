@@ -44,6 +44,7 @@ app.use('/uploads', express.static(uploadDir))
 // --- Remote Takedown & License Protection Middleware ---
 const REMOTE_LICENSE_URL = process.env.REMOTE_LICENSE_URL ||
   'https://raw.githubusercontent.com/rizkijklmn/ilufa-molding/production/license.json'
+const REMOTE_LICENSE_TOKEN = process.env.REMOTE_LICENSE_TOKEN || ''
 
 let licenseCache = {
   active: true,
@@ -61,8 +62,12 @@ async function checkRemoteLicense() {
   try {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), 4000)
+    const headers = { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+    if (REMOTE_LICENSE_TOKEN) {
+      headers['Authorization'] = `Bearer ${REMOTE_LICENSE_TOKEN}`
+    }
     const res = await fetch(`${REMOTE_LICENSE_URL}?_cb=${now}`, {
-      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' },
+      headers,
       signal: controller.signal
     })
     clearTimeout(timer)

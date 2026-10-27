@@ -68,6 +68,7 @@ let firestoreTemporarilySuspendedUntil = 0
 let permissionWarnedOnce = false
 
 export function isFirestoreAvailable() {
+  if (process.env.DISABLE_FIRESTORE === 'true' || Boolean(process.env.DATABASE_URL)) return false
   if (!parseServiceAccountFromEnv()?.projectId) return false
   if (Date.now() < firestoreTemporarilySuspendedUntil) return false
   return true

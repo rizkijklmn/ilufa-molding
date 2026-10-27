@@ -3,3 +3,5 @@ deployment:
   tasks:
     - /bin/mkdir -p ~/app/
     - /bin/cp -R * ~/app/
+    - /bin/rm -f ~/public_html/index.html
+    - /bin/touch ~/app/tmp/restart.txt

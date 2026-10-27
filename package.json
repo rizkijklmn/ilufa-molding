@@ -9,10 +9,13 @@
     "dev:client": "vite --host 0.0.0.0",
     "build": "vite build",
     "start": "node server/index.js",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate --schema=./prisma/schema.prisma || prisma generate --schema=./schema.prisma || prisma generate --schema=/home/ilufamol/app/prisma/schema.prisma || true",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "node prisma/seed.js"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
@@ -20,13 +23,13 @@
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
     "lucide-vue-next": "^0.468.0",
+    "prisma": "^6.16.2",
     "vue": "^3.5.13"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
     "concurrently": "^9.1.2",
     "nodemon": "^3.1.9",
-    "prisma": "^6.16.2",
     "vite": "^6.1.0"
   }
 }

@@ -1,5 +1,5 @@
 ---
 deployment:
   tasks:
-    - /bin/cp -R * ~/public_html/
-    - /bin/rm -f ~/public_html/index.html
+    - /bin/mkdir -p ~/app/
+    - /bin/cp -R * ~/app/

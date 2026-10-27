@@ -723,10 +723,6 @@ onUnmounted(() => {
           <span class="topbar-notice">{{ cms.general.topbarNotice }}</span>
           <div class="topbar-right">
             <LanguageSelector />
-            <button class="admin-link-btn" @click="setViewMode('admin')">
-              <Lock :size="12" />
-              <span>{{ t("adminBtn", "Admin & CMS") }}</span>
-            </button>
           </div>
         </div>
       </div>

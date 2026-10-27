@@ -999,7 +999,7 @@ onMounted(() => {
                 v-model="loginPassword"
                 type="password"
                 required
-                placeholder="Masukkan password (default: admin123)"
+                placeholder="Masukkan password administrator"
               />
             </div>
           </label>
@@ -1021,12 +1021,6 @@ onMounted(() => {
             </button>
           </div>
         </form>
-        <div class="login-hint">
-          <small
-            >💡 Password bawaan untuk testing adalah:
-            <code>admin123</code></small
-          >
-        </div>
       </div>
     </div>
 

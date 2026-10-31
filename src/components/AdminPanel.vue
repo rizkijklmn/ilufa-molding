@@ -27,6 +27,7 @@ import {
   FolderKanban,
   Image as ImageIcon,
   Menu,
+  Tags,
 } from "lucide-vue-next";
 
 const props = defineProps({
@@ -87,6 +88,149 @@ function normalizeGallerySlots(arr) {
 }
 
 // --- Category Modal Form State ---
+// --- Master Data Tipe Kategori Pengadaan ---
+const defaultProcurementTypes = [
+  {
+    code: 'NEW',
+    name: 'Molding Import Baru',
+    shortLabel: 'Import Baru',
+    badge: 'Import Baru',
+    description: 'Pengadaan mold injeksi presisi tinggi dari manufaktur rekanan terpercaya di luar negeri dengan jaminan spesifikasi dan masa garansi.',
+    ctaText: 'Konsultasi Import'
+  },
+  {
+    code: 'CUSTOM',
+    name: 'Molding Custom Sesuai Desain',
+    shortLabel: 'Custom Desain',
+    badge: 'Custom Desain',
+    description: 'Fabrikasi mold baru dari nol sesuai gambar teknik 2D/3D (CAD/CAM/IGES/STEP) atau sampel fisik produk Anda.',
+    ctaText: 'Buat Mold Custom'
+  },
+  {
+    code: 'USED',
+    name: 'Molding Siap Pakai',
+    shortLabel: 'Siap Pakai',
+    badge: 'Siap Pakai',
+    description: 'Pilihan mold teruji yang siap pakai langsung di mesin injeksi Anda dengan harga ekonomis dan ketersediaan cepat.',
+    ctaText: 'Cek Mold Siap Pakai'
+  }
+];
+
+const availableProcurementTypes = computed(() => {
+  if (Array.isArray(cms.value?.procurementTypes) && cms.value.procurementTypes.length > 0) {
+    return cms.value.procurementTypes;
+  }
+  return defaultProcurementTypes;
+});
+
+function getProcurementTypeLabel(code) {
+  const found = availableProcurementTypes.value.find((pt) => pt.code === code);
+  if (found) return found.name;
+  if (code === 'NEW') return 'Molding Import Baru';
+  if (code === 'CUSTOM') return 'Molding Custom Sesuai Desain';
+  if (code === 'USED') return 'Molding Siap Pakai';
+  return code || '-';
+}
+
+const procurementTypeModalOpen = ref(false);
+const isEditingProcurementType = ref(false);
+const editingProcurementTypeIndex = ref(-1);
+const procurementTypeForm = ref({
+  code: '',
+  name: '',
+  shortLabel: '',
+  badge: '',
+  description: '',
+  ctaText: ''
+});
+
+function openAddProcurementTypeModal() {
+  isEditingProcurementType.value = false;
+  editingProcurementTypeIndex.value = -1;
+  procurementTypeForm.value = {
+    code: '',
+    name: '',
+    shortLabel: '',
+    badge: '',
+    description: '',
+    ctaText: 'Konsultasi'
+  };
+  procurementTypeModalOpen.value = true;
+}
+
+function openEditProcurementTypeModal(item, index) {
+  isEditingProcurementType.value = true;
+  editingProcurementTypeIndex.value = index;
+  procurementTypeForm.value = {
+    code: item.code || '',
+    name: item.name || '',
+    shortLabel: item.shortLabel || item.name || '',
+    badge: item.badge || item.shortLabel || item.name || '',
+    description: item.description || '',
+    ctaText: item.ctaText || 'Konsultasi'
+  };
+  procurementTypeModalOpen.value = true;
+}
+
+async function saveProcurementType() {
+  if (!procurementTypeForm.value.name.trim()) {
+    showToast('Nama tipe pengadaan wajib diisi!', 'error');
+    return;
+  }
+  let code = (procurementTypeForm.value.code || '').trim().toUpperCase();
+  if (!code) {
+    code = procurementTypeForm.value.name
+      .trim()
+      .replace(/[^a-zA-Z0-9]/g, '_')
+      .toUpperCase();
+  }
+
+  if (!Array.isArray(cms.value.procurementTypes)) {
+    cms.value.procurementTypes = JSON.parse(JSON.stringify(defaultProcurementTypes));
+  }
+
+  const payload = {
+    code,
+    name: procurementTypeForm.value.name.trim(),
+    shortLabel: (procurementTypeForm.value.shortLabel || procurementTypeForm.value.name).trim(),
+    badge: (procurementTypeForm.value.badge || procurementTypeForm.value.shortLabel || procurementTypeForm.value.name).trim(),
+    description: (procurementTypeForm.value.description || '').trim(),
+    ctaText: (procurementTypeForm.value.ctaText || 'Konsultasi').trim()
+  };
+
+  if (isEditingProcurementType.value && editingProcurementTypeIndex.value >= 0) {
+    cms.value.procurementTypes[editingProcurementTypeIndex.value] = payload;
+  } else {
+    const existingIndex = cms.value.procurementTypes.findIndex((p) => p.code === code);
+    if (existingIndex >= 0) {
+      cms.value.procurementTypes[existingIndex] = payload;
+    } else {
+      cms.value.procurementTypes.push(payload);
+    }
+  }
+
+  procurementTypeModalOpen.value = false;
+  await saveCMS();
+}
+
+async function deleteProcurementType(index) {
+  const item = availableProcurementTypes.value[index];
+  if (!item) return;
+  if (!confirm(`Hapus tipe pengadaan "${item.name}"?`)) return;
+
+  if (!Array.isArray(cms.value.procurementTypes)) {
+    cms.value.procurementTypes = JSON.parse(JSON.stringify(defaultProcurementTypes));
+  }
+  cms.value.procurementTypes.splice(index, 1);
+  await saveCMS();
+}
+
+async function resetProcurementTypesToDefault() {
+  if (!confirm('Kembalikan daftar tipe kategori pengadaan ke 3 tipe standar (Import Baru, Custom Desain, Siap Pakai)?')) return;
+  cms.value.procurementTypes = JSON.parse(JSON.stringify(defaultProcurementTypes));
+  await saveCMS();
+}
+
 const categoryModalOpen = ref(false);
 const isEditingCategory = ref(false);
 const categoryForm = ref({
@@ -119,7 +263,7 @@ const moldForm = ref({
   cavity: "",
   material: "",
   machineTonnage: "",
-  condition: "Bekas — kondisi terawat",
+  condition: "Siap Pakai — siap inspeksi",
   priceLabel: "Minta penawaran",
   status: "AVAILABLE",
   featured: false,
@@ -301,11 +445,11 @@ async function fetchCMS() {
         if (!data.data.seo) {
           data.data.seo = {
             metaTitle:
-              "iLUFA Molding — Jual Molding Injeksi Plastik Bekas, Jasa Pemesanan Molding Import & Pembuatan Molding Plastik Custom",
+              "iLUFA Molding — Jual Molding Injeksi Plastik Siap Pakai, Jasa Pemesanan Molding Import & Pembuatan Molding Plastik Custom",
             metaDescription:
-              "iLUFA Molding melayani jasa pemesanan molding import baru, pembuatan molding plastik custom sesuai desain 2D/3D & sampel, serta jual molding injeksi plastik bekas (second) siap pakai untuk pabrik manufaktur plastik di Indonesia.",
+              "iLUFA Molding melayani jasa pemesanan molding import baru, pembuatan molding plastik custom sesuai desain 2D/3D & sampel, serta jual molding injeksi plastik siap pakai untuk pabrik manufaktur plastik di Indonesia.",
             metaKeywords:
-              "jual molding injeksi plastik bekas, jasa pemesanan molding import, pembuatan molding plastik custom, cetakan injeksi plastik, jual mold plastik second, pabrik molding plastik indonesia",
+              "jual molding injeksi plastik siap pakai, jasa pemesanan molding import, pembuatan molding plastik custom, cetakan injeksi plastik, jual mold plastik siap pakai, pabrik molding plastik indonesia",
             canonicalUrl: "https://ilufamolding.com/",
           };
         }
@@ -552,7 +696,7 @@ function openAddMoldModal() {
     cavity: "",
     material: "P20 / 718",
     machineTonnage: "120 - 250 Ton",
-    condition: "Bekas — siap pakai",
+    condition: "Siap Pakai — siap inspeksi",
     priceLabel: "Minta penawaran",
     status: "AVAILABLE",
     featured: false,
@@ -1072,6 +1216,14 @@ onMounted(() => {
             <span class="badge">{{ categories.length }}</span>
           </button>
           <button
+            :class="{ active: activeTab === 'procurementTypes' }"
+            @click="selectAdminTab('procurementTypes')"
+          >
+            <Tags :size="18" />
+            <span>Master Tipe Pengadaan</span>
+            <span class="badge">{{ availableProcurementTypes.length }}</span>
+          </button>
+          <button
             :class="{ active: activeTab === 'molds' }"
             @click="selectAdminTab('molds')"
           >
@@ -1147,6 +1299,9 @@ onMounted(() => {
             </button>
             <div class="topbar-title">
               <h1 v-if="activeTab === 'dashboard'">Dashboard & Ringkasan</h1>
+                            <h1 v-else-if="activeTab === 'procurementTypes'">
+                Data Master Tipe Kategori Pengadaan
+              </h1>
               <h1 v-else-if="activeTab === 'categories'">
                 Manajemen Kategori & Detail Kategori
               </h1>
@@ -1262,7 +1417,7 @@ onMounted(() => {
                 <button class="quick-card" @click="openAddMoldModal">
                   <Plus :size="24" />
                   <b>Tambah Molding Baru</b>
-                  <small>Daftarkan mold baru, custom, atau second</small>
+                  <small>Daftarkan mold baru, custom, atau siap pakai</small>
                 </button>
                 <button class="quick-card" @click="openAddProductModal">
                   <Layers :size="24" />
@@ -1327,6 +1482,81 @@ onMounted(() => {
         </div>
 
         <!-- TAB 2: CATEGORIES MANAGEMENT -->
+                <!-- TAB MASTER TIPE PENGADAAN -->
+        <div v-if="activeTab === 'procurementTypes'" class="tab-pane">
+          <div class="toolbar">
+            <div>
+              <h2 style="margin: 0 0 4px">Data Master Tipe Kategori Pengadaan</h2>
+              <p class="section-sub" style="margin: 0">
+                Pilihan tipe pengadaan ini terhubung langsung ke dropdown pilihan kategori pengadaan saat input cetakan mold, filter katalog publik, dan form penawaran (RFQ).
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-outline-dark" @click="resetProcurementTypesToDefault" title="Reset ke tipe standar">
+                <RotateCcw :size="15" /> Reset Standar
+              </button>
+              <button class="btn btn-gold" @click="openAddProcurementTypeModal">
+                <Plus :size="16" /> Tambah Tipe Pengadaan
+              </button>
+            </div>
+          </div>
+
+          <div class="categories-admin-grid">
+            <div
+              v-if="!availableProcurementTypes.length"
+              style="grid-column: 1 / -1; text-align: center; padding: 48px 16px; background: white; border: 1px dashed #cbd5e1; border-radius: 8px; color: #64748b;"
+            >
+              Belum ada tipe pengadaan. Klik "+ Tambah Tipe Pengadaan" untuk membuat baru.
+            </div>
+            <div
+              v-for="(pt, idx) in availableProcurementTypes"
+              :key="pt.code || idx"
+              class="category-admin-card"
+              style="display: flex; flex-direction: column;"
+            >
+              <div class="cat-card-body" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                  <div class="cat-card-top" style="align-items: flex-start; margin-bottom: 12px;">
+                    <div>
+                      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                        <span class="pill-type" :class="'type-' + (pt.code || '').toLowerCase()">{{ pt.code }}</span>
+                        <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 11px; padding: 2px 8px; border-radius: 4px;">{{ pt.badge || pt.shortLabel || pt.name }}</span>
+                      </div>
+                      <h3 style="font-size: 16px; font-weight: 700; color: #0b1f33; margin: 0;">{{ pt.name }}</h3>
+                    </div>
+                  </div>
+
+                  <p class="cat-short-desc" style="color: #475569; font-size: 13px; line-height: 1.5; margin-bottom: 12px;">
+                    {{ pt.description || 'Tidak ada deskripsi.' }}
+                  </p>
+
+                  <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; margin-bottom: 16px; font-size: 12px; color: #64748b;">
+                    <div><strong>Label Singkat (Filter Tab):</strong> {{ pt.shortLabel || pt.name }}</div>
+                    <div style="margin-top: 4px;"><strong>Teks Tombol (CTA):</strong> {{ pt.ctaText || '-' }}</div>
+                  </div>
+                </div>
+
+                <div class="cat-card-footer" style="margin-top: auto; padding-top: 12px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 8px;">
+                  <button
+                    class="btn btn-outline-dark btn-sm"
+                    @click="openEditProcurementTypeModal(pt, idx)"
+                  >
+                    <Edit3 :size="13" /> Edit
+                  </button>
+                  <button
+                    class="btn btn-danger-soft btn-sm"
+                    @click="deleteProcurementType(idx)"
+                    :disabled="availableProcurementTypes.length <= 1"
+                    title="Minimal harus tersisa 1 tipe pengadaan"
+                  >
+                    <Trash2 :size="13" /> Hapus
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div v-if="activeTab === 'categories'" class="tab-pane">
           <div class="toolbar">
             <div>
@@ -1452,9 +1682,13 @@ onMounted(() => {
               </div>
               <select v-model="moldTypeFilter" class="select-filter">
                 <option value="ALL">Semua Tipe Mold</option>
-                <option value="NEW">Molding Import Baru</option>
-                <option value="CUSTOM">Molding Custom</option>
-                <option value="USED">Molding Second / Bekas</option>
+                <option
+                  v-for="pt in availableProcurementTypes"
+                  :key="pt.code"
+                  :value="pt.code"
+                >
+                  {{ pt.name }}
+                </option>
               </select>
               <select v-model="moldStatusFilter" class="select-filter">
                 <option value="ALL">Semua Status Stok</option>
@@ -1528,7 +1762,7 @@ onMounted(() => {
                     <span
                       class="pill-type"
                       :class="'type-' + mold.type.toLowerCase()"
-                      >{{ mold.type }}</span
+                      >{{ getProcurementTypeLabel(mold.type) }}</span
                     >
                     <div class="mt-1 text-xs font-semibold">
                       {{ mold.category }}
@@ -1879,7 +2113,7 @@ onMounted(() => {
                   <textarea
                     v-model="cms.hero.subtitle"
                     rows="3"
-                    placeholder="Pemesanan molding injeksi plastik baru, custom, dan second..."
+                    placeholder="Pemesanan molding injeksi plastik baru, custom, dan siap pakai..."
                   ></textarea>
                 </label>
                 <label class="field-label">
@@ -1942,7 +2176,7 @@ onMounted(() => {
               <h3 class="form-title">3 Pilar Layanan iLUFA Molding</h3>
               <p class="form-help">
                 Sesuaikan judul, deskripsi, dan teks tombol untuk 3 layanan:
-                Import Baru, Custom, dan Second.
+                Import Baru, Custom, dan Siap Pakai.
               </p>
 
               <div class="services-edit-list">
@@ -2050,7 +2284,7 @@ onMounted(() => {
               <p class="form-help">
                 Atur judul halaman (Meta Title), deskripsi (Meta Description),
                 dan kata kunci utama seperti
-                <strong>jual molding injeksi plastik bekas</strong>,
+                <strong>jual molding injeksi plastik siap pakai</strong>,
                 <strong>jasa pemesanan molding import</strong>, dan
                 <strong>pembuatan molding plastik custom</strong> agar website
                 mudah ditemukan oleh pabrik plastik di Google.
@@ -2061,7 +2295,7 @@ onMounted(() => {
                   <span>Judul Halaman Google (Meta Title) *</span>
                   <input
                     v-model="cms.seo.metaTitle"
-                    placeholder="iLUFA Molding — Jual Molding Injeksi Plastik Bekas, Jasa Pemesanan Molding Import & Pembuatan Molding Plastik Custom"
+                    placeholder="iLUFA Molding — Jual Molding Injeksi Plastik Siap Pakai, Jasa Pemesanan Molding Import & Pembuatan Molding Plastik Custom"
                   />
                   <small>
                     Disarankan memuat kata kunci utama dan nama brand (60–110
@@ -2074,7 +2308,7 @@ onMounted(() => {
                   <textarea
                     v-model="cms.seo.metaDescription"
                     rows="3"
-                    placeholder="iLUFA Molding melayani jasa pemesanan molding import baru, pembuatan molding plastik custom, serta jual molding injeksi plastik bekas..."
+                    placeholder="iLUFA Molding melayani jasa pemesanan molding import baru, pembuatan molding plastik custom, serta jual molding injeksi plastik siap pakai..."
                   ></textarea>
                   <small>
                     Teks ringkasan yang muncul di bawah judul pada hasil
@@ -2087,7 +2321,7 @@ onMounted(() => {
                   <textarea
                     v-model="cms.seo.metaKeywords"
                     rows="2"
-                    placeholder="jual molding injeksi plastik bekas, jasa pemesanan molding import, pembuatan molding plastik custom..."
+                    placeholder="jual molding injeksi plastik siap pakai, jasa pemesanan molding import, pembuatan molding plastik custom..."
                   ></textarea>
                   <small
                     >Pisahkan setiap kata kunci dengan tanda koma (,).</small
@@ -2797,9 +3031,13 @@ onMounted(() => {
               <label class="field-label">
                 <span>Tipe Kategori Pengadaan *</span>
                 <select v-model="moldForm.type" required>
-                  <option value="NEW">Molding Import Baru</option>
-                  <option value="CUSTOM">Molding Custom Sesuai Desain</option>
-                  <option value="USED">Molding Second / Bekas</option>
+                  <option
+                    v-for="pt in availableProcurementTypes"
+                    :key="pt.code"
+                    :value="pt.code"
+                  >
+                    {{ pt.name }}
+                  </option>
                 </select>
               </label>
               <label class="field-label">

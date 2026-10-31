@@ -76,11 +76,11 @@ export const DEFAULT_CATEGORIES = [
 export const DEFAULT_CMS = {
   seo: {
     metaTitle:
-      "iLUFA Molding — Jual Molding Injeksi Plastik Bekas, Jasa Pemesanan Molding Import & Pembuatan Molding Plastik Custom",
+      "iLUFA Molding — Jual Molding Injeksi Plastik Siap Pakai, Jasa Pemesanan Molding Import & Pembuatan Molding Plastik Custom",
     metaDescription:
-      "iLUFA Molding melayani jasa pemesanan molding import baru, pembuatan molding plastik custom sesuai desain 2D/3D & sampel, serta jual molding injeksi plastik bekas (second) siap pakai untuk pabrik manufaktur plastik di Indonesia.",
+      "iLUFA Molding melayani jasa pemesanan molding import baru, pembuatan molding plastik custom sesuai desain 2D/3D & sampel, serta jual molding injeksi plastik siap pakai untuk pabrik manufaktur plastik di Indonesia.",
     metaKeywords:
-      "jual molding injeksi plastik bekas, jasa pemesanan molding import, pembuatan molding plastik custom, cetakan injeksi plastik, jual mold plastik second, pabrik molding plastik indonesia, harga molding injeksi plastik, pengadaan cetakan plastik bekasi cikarang",
+      "jual molding injeksi plastik siap pakai, jasa pemesanan molding import, pembuatan molding plastik custom, cetakan injeksi plastik, jual mold plastik siap pakai, pabrik molding plastik indonesia, harga molding injeksi plastik, pengadaan cetakan plastik bekasi cikarang",
     canonicalUrl: "https://ilufamolding.com/",
   },
   general: {
@@ -93,7 +93,7 @@ export const DEFAULT_CMS = {
       accentGold: "#d9aa52",
     },
     topbarNotice:
-      "Jasa Pemesanan Molding Import, Pembuatan Molding Plastik Custom & Jual Molding Injeksi Plastik Bekas",
+      "Jasa Pemesanan Molding Import, Pembuatan Molding Plastik Custom & Jual Molding Injeksi Plastik Siap Pakai",
     whatsappNumber: "6289676181754",
     whatsappMessage:
       "Halo iLUFA Molding, saya ingin konsultasi kebutuhan molding injeksi plastik.",
@@ -106,7 +106,7 @@ export const DEFAULT_CMS = {
     eyebrow: "SOLUSI PENGADAAN MOLDING INJEKSI PLASTIK",
     title: "Molding yang tepat.\nProduksi lebih siap.",
     subtitle:
-      "Solusi lengkap jasa pemesanan molding import baru, pembuatan molding plastik custom sesuai desain 2D/3D, serta jual molding injeksi plastik bekas (second) berkualitas melalui sistem PO / indent terpercaya.",
+      "Solusi lengkap jasa pemesanan molding import baru, pembuatan molding plastik custom sesuai desain 2D/3D, serta jual molding injeksi plastik siap pakai berkualitas melalui sistem PO / indent terpercaya.",
     primaryCtaText: "Konsultasi & Minta Penawaran",
     secondaryCtaText: "Jelajahi Katalog",
     imageUrl:
@@ -114,11 +114,37 @@ export const DEFAULT_CMS = {
     badges: [
       "Jasa pemesanan molding import",
       "Pembuatan molding plastik custom",
-      "Jual molding injeksi plastik bekas",
+      "Jual molding injeksi plastik siap pakai",
     ],
     floatingCardTitle: "Industrial Mold Solutions",
-    floatingCardSubtitle: "IMPORT BARU · CUSTOM · SECOND",
+    floatingCardSubtitle: "IMPORT BARU · CUSTOM · SIAP PAKAI",
   },
+  procurementTypes: [
+    {
+      code: "NEW",
+      name: "Molding Import Baru",
+      shortLabel: "Import Baru",
+      badge: "01 / PROCUREMENT",
+      desc: "Layanan jasa pemesanan molding import baru langsung dari workshop spesialis luar negeri sesuai standar industri. Pilihan multi-cavity, steel grade (P20, 718H, NAK80, S136), dan hot/cold runner system terkalibrasi.",
+      ctaText: "Pesan Molding Import",
+    },
+    {
+      code: "CUSTOM",
+      name: "Molding Custom Sesuai Desain",
+      shortLabel: "Custom",
+      badge: "02 / ENGINEERING",
+      desc: "Jasa pembuatan molding plastik custom berdasarkan gambar teknik 2D/3D (CAD/STEP) atau sampel fisik produk Anda. Konsultasi ketebalan dinding, shrinkage, parting line, dan kecocokan tonase mesin injeksi.",
+      ctaText: "Konsultasi Desain (RFQ)",
+    },
+    {
+      code: "USED",
+      name: "Molding Siap Pakai",
+      shortLabel: "Siap Pakai",
+      badge: "03 / READY STOCK",
+      desc: "Pusat jual molding injeksi plastik siap pakai berkualitas untuk pabrik yang ingin menghemat biaya investasi cetakan (CAPEX). Setiap unit telah diverifikasi ukuran, cavity, runner, dan kelayakan cetaknya.",
+      ctaText: "Lihat Katalog Siap Pakai",
+    },
+  ],
   services: [
     {
       num: "01 / PROCUREMENT",
@@ -135,10 +161,10 @@ export const DEFAULT_CMS = {
       type: "CUSTOM",
     },
     {
-      num: "03 / SECONDARY MARKET",
-      title: "Jual Molding Injeksi Plastik Bekas / Second",
-      desc: "Pusat jual molding injeksi plastik bekas (second) berkualitas untuk pabrik yang ingin menghemat biaya investasi cetakan (CAPEX). Setiap unit telah diverifikasi ukuran, cavity, runner, dan kelayakan cetaknya.",
-      ctaText: "Lihat Katalog Second",
+      num: "03 / READY STOCK",
+      title: "Jual Molding Injeksi Plastik Siap Pakai",
+      desc: "Pusat jual molding injeksi plastik siap pakai berkualitas untuk pabrik yang ingin menghemat biaya investasi cetakan (CAPEX). Setiap unit telah diverifikasi ukuran, cavity, runner, dan kelayakan cetaknya.",
+      ctaText: "Lihat Katalog Siap Pakai",
       type: "USED",
     },
   ],
@@ -167,15 +193,15 @@ export const DEFAULT_CMS = {
   about: {
     eyebrow: "TENTANG iLUFA MOLDING",
     title: "Partner Terpercaya Pengadaan\nMolding Injeksi Plastik",
-    p1: "iLUFA Molding hadir sebagai mitra strategis bagi pemilik pabrik plastik dan industri manufaktur di Indonesia yang membutuhkan jasa pemesanan molding import, pembuatan molding plastik custom, maupun tempat jual molding injeksi plastik bekas yang transparan dan terukur.",
-    p2: "Kami tidak sekadar menjual cetakan, melainkan memberikan solusi teknis menyeluruh: mulai dari seleksi baja mold terbaik, rekayasa desain produk 2D/3D, verifikasi kelayakan molding second siap pakai, hingga pengurusan importasi molding sampai ke pabrik Anda.",
+    p1: "iLUFA Molding hadir sebagai mitra strategis bagi pemilik pabrik plastik dan industri manufaktur di Indonesia yang membutuhkan jasa pemesanan molding import, pembuatan molding plastik custom, maupun tempat jual molding injeksi plastik siap pakai yang transparan dan terukur.",
+    p2: "Kami tidak sekadar menjual cetakan, melainkan memberikan solusi teknis menyeluruh: mulai dari seleksi baja mold terbaik, rekayasa desain produk 2D/3D, verifikasi kelayakan molding siap pakai, hingga pengurusan importasi molding sampai ke pabrik Anda.",
     imageUrl:
       "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=85",
     caption: "Procurement with Precision & Purpose",
     points: [
       "Jasa pemesanan molding import baru bergaransi spesifikasi",
       "Pembuatan molding plastik custom presisi sesuai mesin Anda",
-      "Jual molding injeksi plastik bekas yang sudah diinspeksi",
+      "Jual molding injeksi plastik siap pakai yang sudah diinspeksi",
       "Layanan PO / Indent resmi dengan kontrak & QC transparan",
     ],
   },
@@ -189,8 +215,8 @@ export const DEFAULT_CMS = {
       a: "Waktu pengerjaan (lead time) umumnya berkisar 25–45 hari kerja tergantung kompleksitas desain, ukuran, dan jumlah cavity. Estimasi pengiriman dikonfirmasi secara transparan saat penawaran.",
     },
     {
-      q: "Bagaimana memastikan molding second / bekas masih layak pakai?",
-      a: "Setiap molding second di katalog kami telah melewati pemeriksaan fisik awal: kondisi core & cavity, keausan slider/pin ejector, serta kelengkapan runner system. Calon pembeli juga dipersilakan melakukan inspeksi fisik langsung.",
+      q: "Bagaimana memastikan molding siap pakai masih optimal dan layak pakai?",
+      a: "Setiap molding siap pakai di katalog kami telah melewati pemeriksaan fisik awal: kondisi core & cavity, keausan slider/pin ejector, serta kelengkapan runner system. Calon pembeli juga dipersilakan melakukan inspeksi fisik langsung.",
     },
     {
       q: "Jika saya hanya punya sampel produk fisik tanpa file 3D, apakah bisa?",
@@ -311,9 +337,9 @@ export const DEFAULT_MOLDS = [
     type: "USED",
     category: "Packaging",
     description:
-      "Jual molding injeksi plastik bekas untuk tutup botol ulir 28mm. Kondisi core & cavity terawat dan siap inspeksi.",
+      "Jual molding injeksi plastik siap pakai untuk tutup botol ulir 28mm. Kondisi core & cavity terawat dan siap inspeksi.",
     detailContent:
-      "Molding second berkualitas untuk produksi tutup botol air mineral / minuman kemasan leher standar 28mm. Sistem runner dan saluran pendingin berfungsi normal. Spesifikasi aktual dan uji fungsi dikonfirmasi sebelum transaksi.",
+      "Molding siap pakai berkualitas untuk produksi tutup botol air mineral / minuman kemasan leher standar 28mm. Sistem runner dan saluran pendingin berfungsi normal. Spesifikasi aktual dan uji fungsi dikonfirmasi sebelum transaksi.",
     imageUrl:
       "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=1000&q=80",
     galleryImages: [],
@@ -322,7 +348,7 @@ export const DEFAULT_MOLDS = [
     cavity: 8,
     material: "P20 / S136 Insert",
     machineTonnage: "160 - 220 Ton",
-    condition: "Bekas — siap inspeksi",
+    condition: "Siap Pakai — siap inspeksi",
     priceLabel: "Minta penawaran",
     status: "AVAILABLE",
     featured: true,
@@ -386,9 +412,9 @@ export const DEFAULT_MOLDS = [
     type: "USED",
     category: "Peralatan Rumah Tangga",
     description:
-      "Katalog jual molding injeksi plastik bekas untuk kategori peralatan rumah tangga (houseware). Hemat biaya investasi.",
+      "Katalog jual molding injeksi plastik siap pakai untuk kategori peralatan rumah tangga (houseware). Hemat biaya investasi.",
     detailContent:
-      "Cetakan bekas layak pakai untuk produk keranjang/kontainer rumah tangga. Cocok untuk pabrik plastik yang ingin menambah lini produk baru dengan cepat tanpa menunggu waktu pembuatan mold dari nol.",
+      "Cetakan siap pakai untuk produk keranjang/kontainer rumah tangga. Cocok untuk pabrik plastik yang ingin menambah lini produk baru dengan cepat tanpa menunggu waktu pembuatan mold dari nol.",
     imageUrl:
       "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1000&q=80",
     galleryImages: [],
@@ -397,7 +423,7 @@ export const DEFAULT_MOLDS = [
     cavity: 2,
     material: "P20 Pre-hardened",
     machineTonnage: "250 - 350 Ton",
-    condition: "Bekas — kondisi terawat",
+    condition: "Siap Pakai — kondisi terawat",
     priceLabel: "Minta penawaran",
     status: "NEGOTIATION",
     featured: false,

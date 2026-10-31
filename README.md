@@ -6,7 +6,7 @@ Website katalog dan permintaan penawaran (RFQ) untuk pengadaan molding injeksi p
 
 - **Landing Page Responsif Berstandar Industri**:
   - Banner Hero dengan pesan terarah untuk manufaktur plastik & tombol CTA.
-  - 3 Pilar Layanan: Molding Import Baru, Molding Custom Desain, dan Molding Second.
+  - 3 Pilar Layanan: Molding Import Baru, Molding Custom Desain, dan Molding Siap Pakai.
   - Katalog Molding (Tersedia, PO/Indent, Negosiasi, Terjual) dengan modal detail spesifikasi teknis lengkap (cavity, berat, dimensi base, baja mold, tonase mesin).
   - Katalog Contoh Hasil Cetakan Plastik (Gantungan, Packaging Tutup Botol, Wadah Makanan, Part Otomotif) dengan filter kategori.
   - Alur & Cara Pemesanan Sistem PO/Indent 4 langkah terarah.

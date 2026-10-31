@@ -8,7 +8,7 @@ const molds = [
     type: 'USED', category: 'Packaging', description: 'Contoh listing molding tutup botol. Spesifikasi aktual perlu dikonfirmasi sebelum transaksi.',
     imageUrl: 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=1000&q=80',
     dimensions: 'Perlu konfirmasi', weightKg: null, cavity: 8, material: 'Perlu konfirmasi',
-    machineTonnage: 'Perlu konfirmasi', condition: 'Bekas — perlu inspeksi', priceLabel: 'Minta penawaran',
+    machineTonnage: 'Perlu konfirmasi', condition: 'Siap Pakai — perlu inspeksi', priceLabel: 'Minta penawaran',
     status: 'AVAILABLE', featured: true
   },
   {
@@ -29,9 +29,9 @@ const molds = [
   },
   {
     code: 'ILF-USED-004', name: 'Molding Peralatan Rumah Tangga', slug: 'molding-peralatan-rumah-tangga',
-    type: 'USED', category: 'Household', description: 'Contoh katalog molding second untuk kategori peralatan rumah tangga. Kondisi dan kompatibilitas wajib diverifikasi.',
+    type: 'USED', category: 'Household', description: 'Contoh katalog molding siap pakai untuk kategori peralatan rumah tangga. Kondisi dan kompatibilitas wajib diverifikasi.',
     imageUrl: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1000&q=80',
-    dimensions: 'Perlu konfirmasi', cavity: 2, condition: 'Bekas — perlu inspeksi',
+    dimensions: 'Perlu konfirmasi', cavity: 2, condition: 'Siap Pakai — perlu inspeksi',
     priceLabel: 'Minta penawaran', status: 'NEGOTIATION', featured: false
   }
 ]

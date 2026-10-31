@@ -48,7 +48,7 @@ const typeLabel = (type) => {
       {
         NEW: "New Imported Mold",
         CUSTOM: "Custom Mold Fabrication",
-        USED: "Used / Second Mold",
+        USED: "Ready-to-Use Mold",
       }[type] || type
     );
   }
@@ -56,7 +56,7 @@ const typeLabel = (type) => {
     {
       NEW: "Molding Import Baru",
       CUSTOM: "Molding Custom Sesuai Pesanan",
-      USED: "Molding Second / Bekas",
+      USED: "Molding Siap Pakai",
     }[type] || type
   );
 };

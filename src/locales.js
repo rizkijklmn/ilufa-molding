@@ -17,7 +17,7 @@ export const LOCALES = {
     trust1Title: "Solusi Industri",
     trust1Desc: "Fokus pada kebutuhan produksi",
     trust2Title: "3 Pilihan Layanan",
-    trust2Desc: "Baru, custom, dan second",
+    trust2Desc: "Baru, custom, dan siap pakai",
     trust3Title: "Proses Terarah",
     trust3Desc: "Spesifikasi hingga pengiriman",
     trust4Title: "Pengiriman Seluruh Indonesia",
@@ -27,7 +27,7 @@ export const LOCALES = {
     servicesEyebrow: "SOLUSI PENGADAAN MOLDING",
     servicesTitle: "3 model layanan pengadaan molding injeksi plastik.",
     servicesDesc:
-      "Pilih pengadaan mold import baru, fabrikasi custom sesuai gambar 2D/3D, atau mold second berkualitas. Spesifikasi dan estimasi dikonfirmasi melalui konsultasi teknis.",
+      "Pilih pengadaan mold import baru, fabrikasi custom sesuai gambar 2D/3D, atau mold siap pakai berkualitas. Spesifikasi dan estimasi dikonfirmasi melalui konsultasi teknis.",
 
     // Catalog Section
     catalogEyebrow: "KATALOG MOLDING",
@@ -38,7 +38,7 @@ export const LOCALES = {
     filterAll: "Semua Tipe",
     filterNew: "Baru (Import)",
     filterCustom: "Custom",
-    filterUsed: "Second / Bekas",
+    filterUsed: "Siap Pakai",
     categoryFilterAll: "Semua Kategori",
     loadingMolds: "Memuat katalog molding...",
     noMoldsFound: "Tidak ada molding yang cocok dengan pencarian / filter ini.",
@@ -86,7 +86,7 @@ export const LOCALES = {
     faqEyebrow: "FAQ & TANYA JAWAB",
     faqTitle: "Pertanyaan yang sering diajukan pelanggan.",
     faqDesc:
-      "Semua kejelasan seputar garansi, inspeksi fisik mold second, dan sistem pembayaran termin PO dijelaskan secara terbuka.",
+      "Semua kejelasan seputar garansi, inspeksi fisik mold siap pakai, dan sistem pembayaran termin PO dijelaskan secara terbuka.",
 
     // About Section
     aboutEyebrow: "TENTANG KAMI",
@@ -103,7 +103,7 @@ export const LOCALES = {
     formMoldType: "Jenis Kebutuhan Molding",
     formTypeCustom: "Pembuatan Custom (Desain Baru / Sampel)",
     formTypeNew: "Pemesanan Import Baru (Standar)",
-    formTypeUsed: "Molding Second / Bekas Siap Pakai",
+    formTypeUsed: "Molding Siap Pakai",
     formProductNeed: "Deskripsi Produk yang Ingin Dicetak *",
     formDimensions: "Perkiraan Dimensi Produk (P x L x T mm)",
     formCavity: "Target Jumlah Cavity",
@@ -163,7 +163,7 @@ export const LOCALES = {
     filterAll: "All Types",
     filterNew: "New (Import)",
     filterCustom: "Custom",
-    filterUsed: "Used / Second",
+    filterUsed: "Ready to Use",
     categoryFilterAll: "All Categories",
     loadingMolds: "Loading mold catalog...",
     noMoldsFound: "No molds match this search or filter criteria.",
@@ -211,7 +211,7 @@ export const LOCALES = {
     faqEyebrow: "FAQ & INQUIRIES",
     faqTitle: "Frequently asked questions by clients.",
     faqDesc:
-      "All clarity regarding warranty, physical inspection of second-hand molds, and PO milestone payments is fully transparent.",
+      "All clarity regarding warranty, physical inspection of ready-to-use molds, and PO milestone payments is fully transparent.",
 
     // About Section
     aboutEyebrow: "ABOUT US",
@@ -228,7 +228,7 @@ export const LOCALES = {
     formMoldType: "Mold Requirement Type",
     formTypeCustom: "Custom Mold Fabrication (New Design / Sample)",
     formTypeNew: "New Imported Mold (Standard)",
-    formTypeUsed: "Used / Pre-owned Mold (Ready to Run)",
+    formTypeUsed: "Ready-to-Use Mold",
     formProductNeed: "Product Description to be Molded *",
     formDimensions: "Estimated Product Dimensions (L x W x H mm)",
     formCavity: "Target Number of Cavities",

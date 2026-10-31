@@ -2822,6 +2822,98 @@ onMounted(() => {
       </main>
     </div>
 
+    <!-- MODAL FORM: TAMBAH / EDIT TIPE KATEGORI PENGADAAN -->
+    <div
+      v-if="procurementTypeModalOpen"
+      class="modal-backdrop"
+      @click.self="procurementTypeModalOpen = false"
+    >
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3>
+            {{
+              isEditingProcurementType
+                ? "Edit Tipe Kategori Pengadaan"
+                : "Tambah Tipe Kategori Pengadaan"
+            }}
+          </h3>
+          <button
+            type="button"
+            class="close-btn"
+            @click="procurementTypeModalOpen = false"
+          >
+            <X :size="18" />
+          </button>
+        </div>
+        <form @submit.prevent="saveProcurementType" class="modal-form">
+          <div class="modal-body">
+            <div class="grid-2">
+              <label class="field-label">
+                <span>Kode Unik (Sistem) *</span>
+                <input
+                  v-model="procurementTypeForm.code"
+                  placeholder="Contoh: REFURBISHED"
+                  :disabled="isEditingProcurementType"
+                  style="text-transform: uppercase"
+                />
+                <small>Dipakai sebagai identifier data mold. Tidak bisa diubah setelah dibuat.</small>
+              </label>
+              <label class="field-label">
+                <span>Nama Lengkap Tipe *</span>
+                <input
+                  v-model="procurementTypeForm.name"
+                  placeholder="Contoh: Molding Siap Pakai"
+                  required
+                />
+              </label>
+              <label class="field-label">
+                <span>Label Singkat (Tab Filter)</span>
+                <input
+                  v-model="procurementTypeForm.shortLabel"
+                  placeholder="Contoh: Siap Pakai"
+                />
+              </label>
+              <label class="field-label">
+                <span>Label Badge</span>
+                <input
+                  v-model="procurementTypeForm.badge"
+                  placeholder="Contoh: 03 / READY STOCK"
+                />
+              </label>
+              <label class="field-label" style="grid-column: 1 / -1">
+                <span>Teks Tombol (CTA)</span>
+                <input
+                  v-model="procurementTypeForm.ctaText"
+                  placeholder="Contoh: Lihat Katalog Siap Pakai"
+                />
+              </label>
+              <label class="field-label" style="grid-column: 1 / -1">
+                <span>Deskripsi Singkat</span>
+                <textarea
+                  v-model="procurementTypeForm.description"
+                  rows="3"
+                  placeholder="Jelaskan tipe pengadaan ini..."
+                ></textarea>
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-dark"
+              @click="procurementTypeModalOpen = false"
+            >
+              Batal
+            </button>
+            <button type="submit" class="btn btn-gold" :disabled="loading">
+              <Save :size="15" />
+              {{ isEditingProcurementType ? "Simpan Perubahan" : "Tambah Tipe" }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- MODAL FORM: TAMBAH / EDIT KATEGORI & DETAIL (MAX 3 GAMBAR TAMBAHAN) -->
     <div
       v-if="categoryModalOpen"

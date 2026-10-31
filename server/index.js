@@ -1813,9 +1813,21 @@ ${urls.map(u => `  <url>
 // Serve built Vue frontend in local production mode
 if (!isVercel) {
   const distPath = path.resolve(__dirname, '../dist')
-  app.use(express.static(distPath))
+  // Assets with hashes can be cached, but index.html must never be cached so updates take effect instantly
+  app.use(express.static(distPath, {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+        res.setHeader('Pragma', 'no-cache')
+        res.setHeader('Expires', '0')
+      }
+    }
+  }))
   app.get('{*splat}', (req, res, next) => {
     if (req.path.startsWith('/api/')) return next()
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    res.setHeader('Pragma', 'no-cache')
+    res.setHeader('Expires', '0')
     res.sendFile(path.join(distPath, 'index.html'), (err) => err && next(err))
   })
 }
